@@ -3,8 +3,10 @@ using System.Xml.Linq;
 
 namespace graf;
 
-public sealed record Node(string Name, string Type) : IEnumerable
+public sealed record Node(string? Name, string Type) : IEnumerable
 {
+    public Node(string Type) : this(null, Type) { }
+
     public IReadOnlyCollection<Node> Nodes => nodes;
 
     private readonly List<Node> nodes = [];
@@ -36,7 +38,7 @@ public sealed record Node(string Name, string Type) : IEnumerable
     public XElement ToXml()
     {
         var element = new XElement(Type);
-        element.Add(new XAttribute("Name", Name));
+        if (Name != null) { element.Add(new XAttribute("Name", Name)); }
         foreach (var attrib in attributes)
         {
             element.Add(new XAttribute(attrib.Key, attrib.Value));
