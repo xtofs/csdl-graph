@@ -2,17 +2,17 @@ namespace graf;
 
 public class Graph
 {
-    record Vertex(string Label) { }
+    record Node(string Label) { }
 
     record Edge(int Source, int Target, string Label) { }
 
-    private readonly List<Vertex> vertices = [];
+    private readonly List<Node> vertices = [];
 
     private readonly List<Edge> edges = [];
 
-    internal int AddVertex(string name)
+    internal int AddNode(string name)
     {
-        vertices.Add(new Vertex(name));
+        vertices.Add(new Node(name));
         return vertices.Count - 1;
     }
 
@@ -21,26 +21,25 @@ public class Graph
         edges.Add(new Edge(src, dst, label));
     }
 
-    public void ToMermaid()
+    public void WriteAsMermaidMarkdown(TextWriter writer)
     {
-        using var file = File.CreateText("foo.md");
-        file.WriteLine("```mermaid");
-        file.WriteLine("graph");
+        writer.WriteLine("```mermaid");
+        writer.WriteLine("graph");
         foreach (var (i, v) in vertices.Enumerate())
         {
-            file.WriteLine("{0}[{1}]", i, v.Label);
+            writer.WriteLine("{0}[{1}]", i, v.Label);
         }
         foreach (var edge in edges)
         {
             if (edge.Label == "has")
             {
-                file.WriteLine("{0}-->{2}", edge.Source, edge.Label, edge.Target);
+                writer.WriteLine("{0}-->{2}", edge.Source, edge.Label, edge.Target);
             }
             else
             {
-                file.WriteLine("{0}-.{1}.->{2}", edge.Source, edge.Label, edge.Target);
+                writer.WriteLine("{0}-.{1}.->{2}", edge.Source, edge.Label, edge.Target);
             }
         }
-        file.WriteLine("```");
+        writer.WriteLine("```");
     }
 }

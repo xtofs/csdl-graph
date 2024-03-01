@@ -1,21 +1,18 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Xml.Linq;
-
 namespace graf;
 
-public sealed record Node(string? Name, string Type) : IEnumerable
+public sealed record Element(string? Name, string Type) : IEnumerable
 {
-    public Node(string Type) : this(null, Type) { }
+    public Element(string Type) : this(null, Type) { }
 
-    public IReadOnlyCollection<Node> Nodes => nodes;
+    public IReadOnlyCollection<Element> Nodes => nodes;
 
-    private readonly List<Node> nodes = [];
+    private readonly List<Element> nodes = [];
     private readonly Dictionary<string, string> attributes = [];
 
-    public void Add(Node node) { nodes.Add(node); }
+    public void Add(Element node) { nodes.Add(node); }
 
     // for collection initializer
-    IEnumerator IEnumerable.GetEnumerator() => Enumerable.Empty<Node>().GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => Enumerable.Empty<Element>().GetEnumerator();
 
     public String this[string name]
     {
@@ -50,9 +47,9 @@ public sealed record Node(string? Name, string Type) : IEnumerable
         return element;
     }
 
-    private IEnumerable<Node> AllDescendants()
+    private IEnumerable<Element> AllDescendants()
     {
-        var queue = new Queue<Node>();
+        var queue = new Queue<Element>();
         queue.Enqueue(this);
 
         while (queue.TryDequeue(out var node))
@@ -68,11 +65,11 @@ public sealed record Node(string? Name, string Type) : IEnumerable
     public Graph ToGraph()
     {
         var graph = new Graph();
-        var index = new Dictionary<Node, int>(ReferenceEqualityComparer.Instance);
+        var index = new Dictionary<Element, int>(ReferenceEqualityComparer.Instance);
         foreach (var node in this.AllDescendants())
         {
             var label = $"{(string.IsNullOrWhiteSpace(node.Name) ? "" : $"{node.Name}: ")}{node.Type}";
-            var ix = graph.AddVertex(label);
+            var ix = graph.AddNode(label);
             index.Add(node, ix);
         }
 
@@ -99,12 +96,12 @@ public sealed record Node(string? Name, string Type) : IEnumerable
         return graph;
     }
 
-    private bool TryFind(string name, [MaybeNullWhen(false)] out Node node)
+    private bool TryFind(string name, [MaybeNullWhen(false)] out Element node)
     {
         return TryFind(name.Split('.'), out node);
     }
 
-    private bool TryFind(Span<string> name, [MaybeNullWhen(false)] out Node node)
+    private bool TryFind(Span<string> name, [MaybeNullWhen(false)] out Element node)
     {
         var current = this;
         while (name.Length > 0)
@@ -121,5 +118,19 @@ public sealed record Node(string? Name, string Type) : IEnumerable
         }
         node = current;
         return true;
+    }
+
+    public void WriteSchemaXml(string path)
+    {
+        var xml = this.ToXml();
+        using var schema = File.CreateText(path);
+        schema.WriteLine(xml);
+    }
+
+    public void WriteGraphMarkdown(string path)
+    {
+        var graph = this.ToGraph();
+        using var file = File.CreateText(path);
+        graph.WriteAsMermaidMarkdown(file);
     }
 }
