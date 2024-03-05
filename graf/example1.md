@@ -12,6 +12,8 @@ graph
 9[id: Property]
 10[category: NavigationProperty]
 11[id: Property]
+12[Annotation]
+13[Annotation]
 0-->1
 0-->2
 0-->3
@@ -20,11 +22,15 @@ graph
 2-->6
 3-->7
 3-->8
-6-.type.->4
+6-.Type.->4
 7-->9
 7-->10
 8-->11
-9-.type.->4
-10-.type.->8
-11-.type.->4
+8-->12
+9-.Type.->4
+10-.Type.->8
+10-->13
+11-.Type.->4
+12-.Term.->6
+13-.Term.->6
 ```

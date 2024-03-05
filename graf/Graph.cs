@@ -21,9 +21,8 @@ public class Graph
         edges.Add(new Edge(src, dst, label));
     }
 
-    public void WriteAsMermaidMarkdown(TextWriter writer)
+    public void WriteAsMermaid(TextWriter writer)
     {
-        writer.WriteLine("```mermaid");
         writer.WriteLine("graph");
         foreach (var (i, v) in vertices.Enumerate())
         {
@@ -40,6 +39,5 @@ public class Graph
                 writer.WriteLine("{0}-.{1}.->{2}", edge.Source, edge.Label, edge.Target);
             }
         }
-        writer.WriteLine("```");
     }
 }

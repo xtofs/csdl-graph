@@ -8,11 +8,14 @@
   </Schema>
   <Schema Name="sales">
     <EntityType Name="Product">
-      <Property Name="id" Type="edm.String" />
-      <NavigationProperty Name="category" Type="sales.Category" />
+      <Property Name="id" Type="Edm.String" />
+      <NavigationProperty Name="category" Type="sales.Category">
+        <Annotation Term="Core.Description" String="the catogory of the product" />
+      </NavigationProperty>
     </EntityType>
     <EntityType Name="Category">
-      <Property Name="id" Type="edm.String" />
+      <Property Name="id" Type="Edm.String" />
+      <Annotation Term="Core.Description" String="a product catogory" />
     </EntityType>
   </Schema>
 </Model>

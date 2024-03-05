@@ -1,61 +1,86 @@
+using System.ComponentModel;
+
 namespace graf;
 
-public sealed record Element(string? Name, string Type) : IEnumerable
+public abstract record Node;
+
+public sealed record Reference(string Name, string QualifiedName) : Node
 {
-    public Element(string Type) : this(null, Type) { }
+}
 
-    public IReadOnlyCollection<Element> Nodes => nodes;
+public sealed record Property(string Name, string Value) : Node
+{
+}
 
-    private readonly List<Element> nodes = [];
-    private readonly Dictionary<string, string> attributes = [];
-
-    public void Add(Element node) { nodes.Add(node); }
-
-    // for collection initializer
-    IEnumerator IEnumerable.GetEnumerator() => Enumerable.Empty<Element>().GetEnumerator();
-
-    public String this[string name]
+public sealed record Element(string? Name, string Type) : Node, IEnumerable
+// IEnumerable required for collection initializer
+{
+    public Element() : this(null, "Model")
     {
-        set => attributes.Add(name, value);
+        nodes = [
+            new Element("Edm", "Schema"){
+                new Element("String", "PrimitiveType"),
+                new Element("Int32", "PrimitiveType")
+            },
+            new Element("Core", "Schema"){
+                // https://github.com/OData/vocabularies/blob/684075c5642413e37a474f2d3e76d79dd92cf029/Org.OData.Core.V1.xml#L64
+                new Element("Description", "Term") {
+                    new Reference("Type", "Edm.String" )
+                }
+            }
+        ];
     }
 
-    private bool PrintMembers(System.Text.StringBuilder builder)
-    {
-        builder.AppendFormat("Name={0}", Name);
-        builder.AppendFormat(", Type={0}", Type);
-        foreach (var attrib in attributes)
-        {
-            builder.AppendFormat(", {0}={1}", attrib.Key, attrib.Value);
-        }
+    private readonly List<Node> nodes = [];
 
-        builder.AppendJoinIfAny(", Nodes=[", nodes, ",", "]");
+    public Element(string Type) : this(null, Type) { }
+
+    public IReadOnlyList<Node> Nodes => nodes;
+
+    public void Add(Node node) { nodes.Add(node); }
+
+
+    IEnumerator IEnumerable.GetEnumerator() => nodes.GetEnumerator();
+
+    protected override bool PrintMembers(System.Text.StringBuilder builder)
+    {
+        builder.AppendFormatIfNotNull("Name={0}, ", Name);
+        builder.AppendFormat("Type={0}", Type);
+
+        builder.AppendJoinIfAny(", Nodes=[", nodes, ", ", "]");
         return true;
     }
 
     public XElement ToXml()
     {
-        var element = new XElement(Type);
-        if (Name != null) { element.Add(new XAttribute("Name", Name)); }
-        foreach (var attrib in attributes)
-        {
-            element.Add(new XAttribute(attrib.Key, attrib.Value));
-        }
+        var xElement = new XElement(Type);
+        if (Name != null) { xElement.Add(new XAttribute("Name", Name)); }
         foreach (var item in nodes)
         {
-            element.Add(item.ToXml());
+            switch (item)
+            {
+                case Element element:
+                    xElement.Add(element.ToXml());
+                    break;
+                case Reference reference:
+                    xElement.Add(new XAttribute(reference.Name, reference.QualifiedName));
+                    break;
+                case Property value:
+                    xElement.Add(new XAttribute(value.Name, value.Value));
+                    break;
+            }
         }
-        return element;
+        return xElement;
     }
 
     private IEnumerable<Element> AllDescendants()
     {
-        var queue = new Queue<Element>();
-        queue.Enqueue(this);
+        var queue = new Queue<Element>() { this };
 
         while (queue.TryDequeue(out var node))
         {
             yield return node;
-            foreach (var child in node.Nodes)
+            foreach (var child in node.Nodes.OfType<Element>())
             {
                 queue.Enqueue(child);
             }
@@ -77,43 +102,82 @@ public sealed record Element(string? Name, string Type) : IEnumerable
         {
             foreach (var child in node.Nodes)
             {
-                graph.AddEdge(index[node], index[child], "has");
-            }
-
-            foreach (var (key, value) in node.attributes)
-            {
-                if (this.TryFind(value, out var ty))
+                switch (child)
                 {
-                    Console.WriteLine($"found associated node {value}");
-                    graph.AddEdge(index[node], index[ty], key.ToLower());
-                }
-                else
-                {
-                    Console.WriteLine($"couldn't find associated node {value}");
+                    case Element element:
+                        graph.AddEdge(index[node], index[element], "has");
+                        break;
+                    case Reference reference:
+                        var qn = reference.QualifiedName;
+                        if (this.TryFindQualifiedName(reference.QualifiedName, out var target))
+                        {
+                            Console.WriteLine($"found associated node {qn}");
+                            graph.AddEdge(index[node], index[target], reference.Name);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"couldn't find associated node {qn}");
+                        }
+                        break;
                 }
             }
         }
         return graph;
     }
 
-    private bool TryFind(string name, [MaybeNullWhen(false)] out Element node)
+    private string ChildName
     {
-        return TryFind(name.Split('.'), out node);
+        get
+        {
+            if (Type == "Annotation")
+            {
+                var @ref = nodes.OfType<Reference>().Single(r => r.Name == "Term");
+                return "@" + @ref.QualifiedName; // TODO add qualifier
+            }
+            else if (Name != null)
+            {
+                return this.Name;
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(Name));
+            }
+        }
     }
 
-    private bool TryFind(Span<string> name, [MaybeNullWhen(false)] out Element node)
+    public bool TryGetChild(string name, [MaybeNullWhen(false)] out Element child)
+    {
+        var ix = nodes.FindIndex(n => n is Element e && string.Equals(e.ChildName, name, StringComparison.InvariantCultureIgnoreCase));
+        if (ix < 0)
+        {
+            child = default; return false;
+        }
+        else
+        {
+            child = (Element)nodes[ix];
+            return true;
+        }
+    }
+
+
+    public bool TryFindQualifiedName(string name, [MaybeNullWhen(false)] out Element node)
+    {
+        return TryFindQualifiedName(name.Split('.'), out node);
+    }
+
+    private bool TryFindQualifiedName(Span<string> name, [MaybeNullWhen(false)] out Element node)
     {
         var current = this;
         while (name.Length > 0)
         {
             var first = name[0];
 
-            var ix = current.nodes.FindIndex(n => n.Name.Equals(first, StringComparison.InvariantCultureIgnoreCase));
+            var ix = current.nodes.FindIndex(n => n is Element e && string.Equals(e.Name, first, StringComparison.InvariantCultureIgnoreCase));
             if (ix < 0)
             {
                 node = default; return false;
             }
-            current = current.nodes[ix];
+            current = (Element)current.nodes[ix];
             name = name[1..];
         }
         node = current;
@@ -130,7 +194,31 @@ public sealed record Element(string? Name, string Type) : IEnumerable
     public void WriteGraphMarkdown(string path)
     {
         var graph = this.ToGraph();
-        using var file = File.CreateText(path);
-        graph.WriteAsMermaidMarkdown(file);
+        using var writer = File.CreateText(path);
+        writer.WriteLine("```mermaid");
+        graph.WriteAsMermaid(writer);
+        writer.WriteLine("```");
+
     }
+}
+
+public static class ElementExtensions
+{
+    public static Element ResolvePath(this Element element, params string[] segments)
+    {
+        var cursor = element;
+        foreach (var segment in segments)
+        {
+            if (cursor.TryGetChild(segment, out var child))
+            {
+                cursor = child;
+            }
+            else
+            {
+                throw new KeyNotFoundException(segment);
+            }
+        }
+        return cursor;
+    }
+
 }

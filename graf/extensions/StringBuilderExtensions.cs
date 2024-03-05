@@ -23,6 +23,14 @@ static class StringBuilderExtensions
         }
         if (i > 0) { builder.Append(close); }
     }
+
+    public static void AppendFormatIfNotNull(this StringBuilder builder, string fmt, object? arg0)
+    {
+        if (arg0 != null)
+        {
+            builder.AppendFormat(fmt, arg0);
+        }
+    }
 }
 
 
