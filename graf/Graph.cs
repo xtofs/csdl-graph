@@ -4,7 +4,7 @@ public class Graph
 {
     record Node(string Label) { }
 
-    record Edge(int Source, int Target, string Label) { }
+    record Edge(int Source, int Target, string Label, string? Color) { }
 
     private readonly List<Node> vertices = [];
 
@@ -16,9 +16,10 @@ public class Graph
         return vertices.Count - 1;
     }
 
-    public void AddEdge(int src, int dst, string label)
+    public int AddEdge(int src, int dst, string label, string? color = null)
     {
-        edges.Add(new Edge(src, dst, label));
+        edges.Add(new Edge(src, dst, label, color));
+        return edges.Count - 1;
     }
 
     public void WriteAsMermaid(TextWriter writer)
@@ -38,6 +39,12 @@ public class Graph
             {
                 writer.WriteLine("{0}-.{1}.->{2}", edge.Source, edge.Label, edge.Target);
             }
+        }
+
+        var groups = edges.Enumerate().Where(g => g.Item2.Color != null).GroupBy(e => e.Item2.Color, e => e.Item1);
+        foreach (var group in groups)
+        {
+            writer.WriteLine("linkStyle {0} stroke:{1},color:{1};", string.Join(",", group), group.Key);
         }
     }
 }

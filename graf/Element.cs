@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Drawing;
 
 namespace graf;
 
@@ -87,32 +88,36 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
         }
     }
 
-    public Graph ToGraph()
+    public Graph ToGraph(IReadOnlyDictionary<string, IEnumerable<Element>> highlights)
     {
         var graph = new Graph();
-        var index = new Dictionary<Element, int>(ReferenceEqualityComparer.Instance);
+        var nodeIndex = new Dictionary<Element, int>(ReferenceEqualityComparer.Instance);
         foreach (var node in this.AllDescendants())
         {
             var label = $"{(string.IsNullOrWhiteSpace(node.Name) ? "" : $"{node.Name}: ")}{node.Type}";
             var ix = graph.AddNode(label);
-            index.Add(node, ix);
+            nodeIndex.Add(node, ix);
         }
 
-        foreach (var node in index.Keys)
+        foreach (var node in nodeIndex.Keys)
         {
             foreach (var child in node.Nodes)
             {
                 switch (child)
                 {
                     case Element element:
-                        graph.AddEdge(index[node], index[element], "has");
+
+                        var color = highlights.Keys.FirstOrDefault(hl => highlights[hl].Pairwise().Any(p => p.Item1 == node && p.Item2 == element));
+
+                        var eix = graph.AddEdge(nodeIndex[node], nodeIndex[element], "has", color);
+
                         break;
                     case Reference reference:
                         var qn = reference.QualifiedName;
                         if (this.TryFindQualifiedName(reference.QualifiedName, out var target))
                         {
                             Console.WriteLine($"found associated node {qn}");
-                            graph.AddEdge(index[node], index[target], reference.Name);
+                            graph.AddEdge(nodeIndex[node], nodeIndex[target], reference.Name);
                         }
                         else
                         {
@@ -191,14 +196,15 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
         schema.WriteLine(xml);
     }
 
-    public void WriteGraphMarkdown(string path)
+    public void WriteGraphMarkdown(string path, IReadOnlyDictionary<string, IEnumerable<Element>> highlight = null!)
     {
-        var graph = this.ToGraph();
+        highlight ??= new Dictionary<string, IEnumerable<Element>>();
+        var graph = this.ToGraph(highlight);
+
         using var writer = File.CreateText(path);
         writer.WriteLine("```mermaid");
         graph.WriteAsMermaid(writer);
         writer.WriteLine("```");
-
     }
 }
 
@@ -219,6 +225,24 @@ public static class ElementExtensions
             }
         }
         return cursor;
+    }
+
+    public static IEnumerable<Element> ResolvePathPath(this Element element, params string[] segments)
+    {
+        var cursor = element;
+        foreach (var segment in segments)
+        {
+            if (cursor.TryGetChild(segment, out var child))
+            {
+                yield return cursor;
+                cursor = child;
+            }
+            else
+            {
+                throw new KeyNotFoundException(segment);
+            }
+        }
+        yield return cursor;
     }
 
 }
