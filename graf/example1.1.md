@@ -1,3 +1,5 @@
+## /sales.Category/@Core.Description
+
 ```mermaid
 graph
 0[Model]

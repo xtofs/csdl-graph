@@ -31,17 +31,16 @@ var model = new Element() {
 model.WriteSchemaXml("example1.xml");
 model.WriteGraphMarkdown("example1.md");
 
+ShowHighlightedPath(model, "/sales.Category/@Core.Description", "example1.1.md");
+ShowHighlightedPath(model, "/sales/Product/category@Core.Description", "example1.2.md");
 
+static void ShowHighlightedPath(Element model, string path, string filePath)
+{
+    using var writer = File.CreateText(filePath);
+    writer.WriteLine("## {0}", path);
+    writer.WriteLine();
 
-// /sales.Category/@Core.Description
-var entityAnnotation = model.ResolvePath("/sales.Category/@Core.Description").ToArray();
-
-// /sales/Product/category@Core.Description
-var navigationPropertyAnnotation = model.ResolvePath("/sales/Product/category@Core.Description").ToArray();
-
-
-model.WriteGraphMarkdown("example1.1.md", new Dictionary<string, IEnumerable<Element>> { ["red"] = entityAnnotation });
-model.WriteGraphMarkdown("example1.2.md", new Dictionary<string, IEnumerable<Element>> { ["orange"] = navigationPropertyAnnotation });
-
-// model.WriteGraphMarkdown("example1.md");
+    var modelPath = model.ResolvePath(path).ToArray();
+    model.WriteGraphMarkdown(writer, new Dictionary<string, IEnumerable<Element>> { ["red"] = modelPath });
+}
 

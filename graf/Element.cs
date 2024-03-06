@@ -151,14 +151,15 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
         return graph;
     }
 
-    private string ChildName
+    private string QualifiedName
     {
         get
         {
             if (Type == "Annotation")
             {
                 var @ref = nodes.OfType<Reference>().Single(r => r.Name == "Term");
-                return "@" + @ref.QualifiedName; // TODO add qualifier
+                var qualifier = nodes.OfType<Property>().SingleOrDefault(r => r.Name == "Qualifier");
+                return "@" + @ref.QualifiedName + (qualifier == null ? "" : "#" + qualifier.Value);
             }
             else if (Name != null)
             {
@@ -171,11 +172,11 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
         }
     }
 
-    internal Element Parent { get; private set; }
+    internal Element Parent { get; private set; } = default!;
 
     public bool TryGetChild(string name, [MaybeNullWhen(false)] out Element child)
     {
-        var ix = nodes.FindIndex(n => n is Element e && string.Equals(e.ChildName, name, StringComparison.InvariantCultureIgnoreCase));
+        var ix = nodes.FindIndex(n => n is Element e && string.Equals(e.QualifiedName, name, StringComparison.InvariantCultureIgnoreCase));
         if (ix < 0)
         {
             child = default; return false;
@@ -219,12 +220,17 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
         schema.WriteLine(xml);
     }
 
-    public void WriteGraphMarkdown(string path, IReadOnlyDictionary<string, IEnumerable<Element>> highlight = null!)
+    public void WriteGraphMarkdown(string filePath, IReadOnlyDictionary<string, IEnumerable<Element>> highlight = null!)
+    {
+        using var writer = File.CreateText(filePath);
+        WriteGraphMarkdown(writer, highlight);
+    }
+
+    public void WriteGraphMarkdown(TextWriter writer, IReadOnlyDictionary<string, IEnumerable<Element>> highlight = null!)
     {
         highlight ??= new Dictionary<string, IEnumerable<Element>>();
         var graph = this.ToGraph(highlight);
 
-        using var writer = File.CreateText(path);
         writer.WriteLine("```mermaid");
         graph.WriteAsMermaid(writer);
         writer.WriteLine("```");
@@ -233,28 +239,31 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
 
 public static class ElementExtensions
 {
-    public static Element ResolvePathTarget(this Element element, params string[] segments)
-    {
-        var cursor = element;
-        foreach (var segment in segments)
-        {
-            if (cursor.TryGetChild(segment, out var child))
-            {
-                cursor = child;
-            }
-            else
-            {
-                throw new KeyNotFoundException(segment);
-            }
-        }
-        return cursor;
-    }
+    // public static Element ResolvePathTarget(this Element element, params string[] segments)
+    // {
+    //     var cursor = element;
+    //     foreach (var segment in segments)
+    //     {
+    //         if (cursor.TryGetChild(segment, out var child))
+    //         {
+    //             cursor = child;
+    //         }
+    //         else
+    //         {
+    //             throw new KeyNotFoundException(segment);
+    //         }
+    //     }
+    //     return cursor;
+    // }
 
-    // public static IEnumerable<Element> ResolvePath(this Element element, params string[] segments)
     public static IEnumerable<Element> ResolvePath(this Element element, string path)
     {
-        var segments = SplitPath(path);
+        var segments = Path.Split(path);
+
+        // also split by '.' of schema elements
+        segments = segments.SelectMany(s => (!s.StartsWith('@') && s.Contains('.')) ? s.Split('.') : [s]);
         Console.WriteLine("{0} -> {1}", path, string.Join("; ", segments));
+
         var cursor = element;
         foreach (var segment in segments)
         {
@@ -271,9 +280,22 @@ public static class ElementExtensions
         yield return cursor;
     }
 
-    static IEnumerable<string> SplitPath(string v)
-    {
-        return Regex.Matches(v, @"[a-z]+|@[a-z]+\.[a-z]+", RegexOptions.IgnoreCase).Cast<Match>().Select(m => m.Value);
-    }
+    // static IEnumerable<string> SplitPath(string v)
+    // {
+    //     return Regex.Matches(v, @"[a-z]+|@[a-z]+\.[a-z]+", RegexOptions.IgnoreCase).Cast<Match>().Select(m => m.Value);
+    // }
 
+}
+
+public static class Path
+{
+    public static IEnumerable<string> Split(string path)
+    {
+        var fields = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var segments = fields.SelectMany(field => field.IndexOf('@') > 0 ? field.Split('@', 2).Select((s, i) => i == 0 ? s : "@" + s) : [field]);
+
+        // Console.WriteLine("{0} => {1}", path, string.Join("; ", segments));
+
+        return segments;
+    }
 }
