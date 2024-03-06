@@ -116,7 +116,7 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
                         var qn = reference.QualifiedName;
                         if (this.TryFindQualifiedName(reference.QualifiedName, out var target))
                         {
-                            Console.WriteLine($"found associated node {qn}");
+                            // Console.WriteLine($"found associated node {qn}");
                             graph.AddEdge(nodeIndex[node], nodeIndex[target], reference.Name);
                         }
                         else
@@ -210,7 +210,7 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
 
 public static class ElementExtensions
 {
-    public static Element ResolvePath(this Element element, params string[] segments)
+    public static Element ResolvePathTarget(this Element element, params string[] segments)
     {
         var cursor = element;
         foreach (var segment in segments)
@@ -227,7 +227,7 @@ public static class ElementExtensions
         return cursor;
     }
 
-    public static IEnumerable<Element> ResolvePathPath(this Element element, params string[] segments)
+    public static IEnumerable<Element> ResolvePath(this Element element, params string[] segments)
     {
         var cursor = element;
         foreach (var segment in segments)

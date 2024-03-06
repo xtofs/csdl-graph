@@ -31,17 +31,17 @@ model.WriteSchemaXml("example1.xml");
 model.WriteGraphMarkdown("example1.md");
 
 
-var a = model.ResolvePath("sales", "Category", "@Core.Description");
-System.Console.WriteLine(a);
-var aa = model.ResolvePathPath("sales", "Category", "@Core.Description");
+// var a = model.ResolvePathTarget("sales", "Category", "@Core.Description");
+// System.Console.WriteLine(a);
+var aa = model.ResolvePath("sales", "Category", "@Core.Description");
 
-var b = model.ResolvePath("sales", "Product", "category", "@Core.Description");
-var bb = model.ResolvePathPath("sales", "Product", "category", "@Core.Description");
+// var b = model.ResolvePathTarget("sales", "Product", "category", "@Core.Description");
+// System.Console.WriteLine(b);
+var bb = model.ResolvePath("sales", "Product", "category", "@Core.Description");
 
-System.Console.WriteLine(b);
 
-model.WriteGraphMarkdown("example1.1.md", new Dictionary<string, IEnumerable<Element>> { ["orange"] = bb });
-model.WriteGraphMarkdown("example1.2.md", new Dictionary<string, IEnumerable<Element>> { ["red"] = aa });
+model.WriteGraphMarkdown("example1.1.md", new Dictionary<string, IEnumerable<Element>> { ["red"] = aa });
+model.WriteGraphMarkdown("example1.2.md", new Dictionary<string, IEnumerable<Element>> { ["orange"] = bb });
 
 // model.WriteGraphMarkdown("example1.md");
 

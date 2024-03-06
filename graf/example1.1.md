@@ -33,5 +33,5 @@ graph
 11-.Type.->4
 12-.Term.->6
 13-.Term.->6
-linkStyle 2,6,10,15 stroke:orange,color:orange;
+linkStyle 2,7,12 stroke:red,color:red;
 ```
