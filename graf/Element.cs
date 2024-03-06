@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace graf;
 
@@ -36,9 +37,29 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
 
     public Element(string Type) : this(null, Type) { }
 
+    // readonly string? name = name;
+
+    // public string Name => name ?? CalcName();
+
+    // private string CalcName()
+    // {
+    //     if (Type == "Annotation" && TryGetChild("Term", out var an))
+    //     {
+    //         return "@" + an.Name;
+    //     }
+    //     return default!;
+    // }
+
     public IReadOnlyList<Node> Nodes => nodes;
 
-    public void Add(Node node) { nodes.Add(node); }
+    public void Add(Node node)
+    {
+        nodes.Add(node);
+        if (node is Element element)
+        {
+            element.Parent = this;
+        }
+    }
 
 
     IEnumerator IEnumerable.GetEnumerator() => nodes.GetEnumerator();
@@ -150,6 +171,8 @@ public sealed record Element(string? Name, string Type) : Node, IEnumerable
         }
     }
 
+    internal Element Parent { get; private set; }
+
     public bool TryGetChild(string name, [MaybeNullWhen(false)] out Element child)
     {
         var ix = nodes.FindIndex(n => n is Element e && string.Equals(e.ChildName, name, StringComparison.InvariantCultureIgnoreCase));
@@ -227,8 +250,11 @@ public static class ElementExtensions
         return cursor;
     }
 
-    public static IEnumerable<Element> ResolvePath(this Element element, params string[] segments)
+    // public static IEnumerable<Element> ResolvePath(this Element element, params string[] segments)
+    public static IEnumerable<Element> ResolvePath(this Element element, string path)
     {
+        var segments = SplitPath(path);
+        Console.WriteLine("{0} -> {1}", path, string.Join("; ", segments));
         var cursor = element;
         foreach (var segment in segments)
         {
@@ -243,6 +269,11 @@ public static class ElementExtensions
             }
         }
         yield return cursor;
+    }
+
+    static IEnumerable<string> SplitPath(string v)
+    {
+        return Regex.Matches(v, @"[a-z]+|@[a-z]+\.[a-z]+", RegexOptions.IgnoreCase).Cast<Match>().Select(m => m.Value);
     }
 
 }

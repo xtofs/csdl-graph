@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "graf", "graf\graf.csproj", "{529C0992-0114-46A4-B26F-2410F01C2224}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "graf", "graf\graf.csproj", "{43FEA9C1-A798-4051-9258-FD2FF0373629}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "graf.tests", "graf.tests\graf.tests.csproj", "{2D26F47E-BAF4-4637-8B19-C567DD96937B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,14 @@ Global
 		{529C0992-0114-46A4-B26F-2410F01C2224}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{529C0992-0114-46A4-B26F-2410F01C2224}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{529C0992-0114-46A4-B26F-2410F01C2224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43FEA9C1-A798-4051-9258-FD2FF0373629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43FEA9C1-A798-4051-9258-FD2FF0373629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43FEA9C1-A798-4051-9258-FD2FF0373629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43FEA9C1-A798-4051-9258-FD2FF0373629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D26F47E-BAF4-4637-8B19-C567DD96937B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D26F47E-BAF4-4637-8B19-C567DD96937B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D26F47E-BAF4-4637-8B19-C567DD96937B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D26F47E-BAF4-4637-8B19-C567DD96937B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -12,8 +12,8 @@ graph
 9[id: Property]
 10[category: NavigationProperty]
 11[id: Property]
-12[Annotation]
-13[Annotation]
+12[@Core.Description: Annotation]
+13[@Core.Description: Annotation]
 0-->1
 0-->2
 0-->3
