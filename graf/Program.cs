@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Text.RegularExpressions;
-using graf;
+﻿using graf;
 
 // https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#sec_ProductsandCategoriesExample
 
@@ -28,13 +26,15 @@ var model = new Element() {
     },
 };
 
-model.WriteSchemaXml("example1.xml");
-model.WriteGraphMarkdown("example1.md");
+Directory.CreateDirectory("example1");
+model.WriteSchemaXml("example1/example1.xml");
+model.WriteGraphMarkdown("example1/example1.md");
 
-ShowHighlightedPath(model, "/sales.Category/@Core.Description", "example1.1.md");
-ShowHighlightedPath(model, "/sales/Product/category@Core.Description", "example1.2.md");
+WriteHighlightedPath(model, "/sales.Category/@Core.Description", "example1/example1.1.md");
 
-static void ShowHighlightedPath(Element model, string path, string filePath)
+WriteHighlightedPath(model, "/sales/Product/category@Core.Description", "example1/example1.2.md");
+
+static void WriteHighlightedPath(Element model, string path, string filePath)
 {
     using var writer = File.CreateText(filePath);
     writer.WriteLine("## {0}", path);
