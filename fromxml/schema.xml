@@ -1,0 +1,16 @@
+<Schema Alias="self" Namespace="example.org">
+    <EntityType Name="Employee">
+        <Key>
+            <PropertyRef Name="Name" />
+        </Key>
+        <Property Name="Name" Type="Edm.String" Nullable="false" />
+    </EntityType>
+    <EntityType Name="ReportingLine">
+        <Key>
+            <PropertyRef Name="ReportsTo/Name" Alias="Manager" />
+            <PropertyRef Name="DirectReport/Name" Alias="Underling" />
+        </Key>
+        <NavigationProperty Name="ReportsTo" Type="self.Employee" />
+        <NavigationProperty Name="DirectReport" Type="self.Employee" />
+    </EntityType>
+</Schema>

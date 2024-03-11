@@ -17,26 +17,6 @@ internal class Program
         return schema;
     }).Value;
 
-    [StringSyntax(StringSyntaxAttribute.Xml)]
-    static readonly string text = """
-        <Schema Alias="self" Namespace="example.org">
-            <EntityType Name="Employee">
-                <Key>
-                    <PropertyRef Name="Name"/>
-                </Key>
-                <Property Name="Name" Type="Edm.String" Nullable="false"/>
-            </EntityType>
-            <EntityType Name="ReportingLine">
-                <Key>
-                    <PropertyRef Name="ReportsTo/Name" Alias="Manager"/>
-                    <PropertyRef Name="DirectReport/Name" Alias="Underling"/>
-                </Key>
-                <NavigationProperty Name="ReportsTo" Type="self.Employee"/>
-                <NavigationProperty Name="DirectReport" Type="self.Employee"/>
-            </EntityType>
-        </Schema>
-    """;
-
     private static void Main()
     {
         // var @ref = "Type:Complex|Enum";
@@ -44,7 +24,7 @@ internal class Program
         // System.Console.WriteLine("result: {0}: {1}", name, string.Join(" | ", types));
 
 
-        if (SchemaParser(XElement.Parse(text), out var schema))
+        if (SchemaParser(XElement.Load("schema.xml"), out var schema))
         {
             Console.WriteLine(schema);
             Console.WriteLine(schema.ToXml());
