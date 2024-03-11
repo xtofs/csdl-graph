@@ -1,9 +1,9 @@
-namespace parsing;
+namespace SemanticGraph;
+
+public delegate bool Try<S, T>(S source, [MaybeNullWhen(false)] out T result);
 
 static class EnumerableExtensions
 {
-    public delegate bool Try<S, T>(S source, [MaybeNullWhen(false)] out T result);
-
     public static IEnumerable<T> TrySelect<S, T>(this IEnumerable<S> items, Try<S, T> selector)
     {
         foreach (var item in items)

@@ -1,113 +1,60 @@
-﻿using System.Text;
-using parsing;
+﻿using SemanticGraph;
 
-var text = """
-    <Schema Alias="self" Namespace="example.org">
-        <EnumType Name="a">
-            <Member Name="x"/>
-            <Member Name="y"/>
-        </EnumType>
-        <ComplexType Name="b"/> 
-    </Schema>
-""";
-
-var xml = XDocument.Parse(text);
-if (xml.Root != null && Schema.TryFromXml(xml.Root, out var schema))
+internal class Program
 {
-    Console.WriteLine(schema);
-}
-else
-{
-    Console.WriteLine("can't parse from XML");
-}
-
-sealed record Schema(string Namespace, string? Alias, IEnumerable<SchemaElement> Elements) : IXmlParsable<Schema>
-{
-    public static bool TryFromXml(XElement xml, [MaybeNullWhen(false)] out Schema result)
+    static readonly XmlParser SchemaParser = new Lazy<XmlParser>(() =>
     {
-        if (xml.TryGetChildrenFromXml<SchemaElement>(XNamespace.None + "Schema", out var elements))
+        var member = Node.Parser("Member", ["Name", "Value"]);
+        var @enum = Node.Parser("EnumType", ["Name"], member);
+        var property = Node.Parser("Property", ["Name", "Type:ComplexType|EnumType"]);
+        var navigationProperty = Node.Parser("NavigationProperty", ["Name", "Type:EntityType"]);
+        var anyProperty = Node.Parser(property, navigationProperty);
+        var complex = Node.Parser("ComplexType", ["Name", "BaseType:ComplexType"], anyProperty);
+        var propertyRef = Node.Parser("PropertyRef", ["Name:Property", "Alias"]);
+        var key = Node.Parser("Key", [], propertyRef);
+        var entity = Node.Parser("EntityType", ["Name:Property", "Alias"], Node.Parser(key, anyProperty));
+        var schema = Node.Parser("Schema", ["Namespace", "Alias"], Node.Parser(entity, complex, @enum));
+        return schema;
+    }).Value;
+
+    [StringSyntax(StringSyntaxAttribute.Xml)]
+    static readonly string text = """
+        <Schema Alias="self" Namespace="example.org">
+            <EntityType Name="Employee">
+                <Key>
+                    <PropertyRef Name="Name"/>
+                </Key>
+                <Property Name="Name" Type="Edm.String" Nullable="false"/>
+            </EntityType>
+            <EntityType Name="ReportingLine">
+                <Key>
+                    <PropertyRef Name="ReportsTo/Name" Alias="Manager"/>
+                    <PropertyRef Name="DirectReport/Name" Alias="Underling"/>
+                </Key>
+                <NavigationProperty Name="ReportsTo" Type="self.Employee"/>
+                <NavigationProperty Name="DirectReport" Type="self.Employee"/>
+            </EntityType>
+        </Schema>
+    """;
+
+    private static void Main()
+    {
+        // var @ref = "Type:Complex|Enum";
+        // var (name, types) = Node.ParseReferenceString(@ref);
+        // System.Console.WriteLine("result: {0}: {1}", name, string.Join(" | ", types));
+
+
+        if (SchemaParser(XElement.Parse(text), out var schema))
         {
-            result = new Schema(xml.GetAttr("Namespace") ?? "?", xml.GetAttr("Alias"), elements);
-            return true;
+            Console.WriteLine(schema);
+            Console.WriteLine(schema.ToXml());
         }
-        result = default;
-        return false;
-    }
-
-    private bool PrintMembers(StringBuilder builder)
-    {
-        builder.AppendFormat("Namespace={0}", Namespace);
-        builder.AppendFormat(", Alias={0}", Alias);
-        builder.AppendList(", Elements=[{0}]", Elements, ", ");
-        return true;
-    }
-}
-
-abstract record SchemaElement(string Name) : IXmlParsable<SchemaElement>
-{
-    public static bool TryFromXml(XElement xml, [MaybeNullWhen(false)] out SchemaElement result)
-    {
-
-        switch (xml.Name.LocalName)
+        else
         {
-            case "EnumType":
-                return xml.TryFromXml<EnumType, SchemaElement>(out result);
-            case "ComplexType":
-                return xml.TryFromXml<ComplexType, SchemaElement>(out result);
+            Console.WriteLine("failed to Parse");
         }
-        result = default;
-        return false;
-    }
-}
-
-
-sealed record EnumType(string Name, IEnumerable<EnumMember> Members) : SchemaElement(Name), IXmlParsable<EnumType>
-{
-    public static bool TryFromXml(XElement xml, [MaybeNullWhen(false)] out EnumType result)
-    {
-        if (xml.TryGetChildrenFromXml<EnumMember>(XNamespace.None + "EnumType", out var members))
-        {
-            var name = xml.GetAttr("Name") ?? "?";
-            result = new EnumType(name, members);
-            return true;
-        }
-        result = default;
-        return false;
     }
 
-    protected override bool PrintMembers(StringBuilder builder)
-    {
-        builder.AppendFormat("Name={0}", Name);
-        builder.AppendList(",  Members=[{0}]", Members, ", ");
-        return true;
-    }
-}
 
-sealed record EnumMember(string Name) : IXmlParsable<EnumMember>
-{
-    public static bool TryFromXml(XElement x, [MaybeNullWhen(false)] out EnumMember result)
-    {
-        if (x.Name == XNamespace.None + "Member")
-        {
-            result = new EnumMember(x.GetAttr("Name") ?? "?");
-            return true;
-        }
-        result = default;
-        return false;
-    }
-}
-
-
-sealed record ComplexType(string Name) : SchemaElement(Name), IXmlParsable<ComplexType>
-{
-    public static bool TryFromXml(XElement x, [MaybeNullWhen(false)] out ComplexType result)
-    {
-        if (x.Name == XNamespace.None + "ComplexType")
-        {
-            result = new ComplexType(x.GetAttr("Name", ""));
-            return true;
-        }
-        result = default;
-        return false;
-    }
+    // static readonly RegexOptions options = RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
 }

@@ -1,5 +1,5 @@
 using System.Xml.Linq;
-namespace parsing;
+namespace SemanticGraph;
 
 static class XmlExtensions
 {
@@ -14,29 +14,5 @@ static class XmlExtensions
     }
 
 
-    public static bool TryGetChildrenFromXml<S>(this XElement xml, XName name, [MaybeNullWhen(false)] out IEnumerable<S> result)
-        where S : IXmlParsable<S>
-    {
-        if (xml.Name == name)
-        {
-            result = xml.Elements().TrySelect<XElement, S>(S.TryFromXml).ToArray();
-            return true;
-        }
-        result = default;
-        return false;
-    }
-
-
-    public static bool TryFromXml<A, B>(this XElement x, [MaybeNullWhen(false)] out B result) where A : B, IXmlParsable<A>
-    {
-        if (A.TryFromXml(x, out var a))
-        {
-            result = a; return true;
-        }
-        else
-        {
-            result = default; return false;
-        }
-    }
 }
 
