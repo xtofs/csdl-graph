@@ -6,13 +6,13 @@ internal class Program
     {
         var member = Node.Parser("Member", ["Name", "Value"]);
         var @enum = Node.Parser("EnumType", ["Name"], member);
-        var property = Node.Parser("Property", ["Name", "Type:ComplexType|EnumType"]);
+        var structuralProperty = Node.Parser("Property", ["Name", "Type:ComplexType|EnumType"]);
         var navigationProperty = Node.Parser("NavigationProperty", ["Name", "Type:EntityType"]);
-        var anyProperty = Node.Parser(property, navigationProperty);
-        var complex = Node.Parser("ComplexType", ["Name", "BaseType:ComplexType"], anyProperty);
+        var property = Node.Parser(structuralProperty, navigationProperty);
+        var complex = Node.Parser("ComplexType", ["Name", "BaseType:ComplexType"], property);
         var propertyRef = Node.Parser("PropertyRef", ["Name:Property", "Alias"]);
         var key = Node.Parser("Key", [], propertyRef);
-        var entity = Node.Parser("EntityType", ["Name:Property", "Alias"], Node.Parser(key, anyProperty));
+        var entity = Node.Parser("EntityType", ["Name:Property", "Alias"], Node.Parser(key, property));
         var schema = Node.Parser("Schema", ["Namespace", "Alias"], Node.Parser(entity, complex, @enum));
         return schema;
     }).Value;
@@ -24,7 +24,7 @@ internal class Program
         // System.Console.WriteLine("result: {0}: {1}", name, string.Join(" | ", types));
 
 
-        if (SchemaParser(XElement.Load("schema.xml"), out var schema))
+        if (SchemaParser(XElement.Load("schema.xml", LoadOptions.SetLineInfo), out var schema))
         {
             Console.WriteLine(schema);
             Console.WriteLine(schema.ToXml());

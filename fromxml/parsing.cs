@@ -1,3 +1,5 @@
+using System.Xml;
+
 namespace SemanticGraph;
 
 public delegate bool XmlParser(XElement xml, [MaybeNullWhen(false)] out Node.Element result);
@@ -64,6 +66,15 @@ public abstract partial record Node
                 var elements = children != null ?
                      xml.Elements().TrySelect((XElement xml, [MaybeNullWhen(false)] out Element result) => children(xml, out result)) :
                      Enumerable.Empty<Element>();
+                if (children != null)
+                {
+                    foreach (var unknown in xml.Elements().Where(e => children(e, out var _) == false))
+                    {
+                        var (ln, co) = (((IXmlLineInfo)xml).LineNumber, ((IXmlLineInfo)xml).LinePosition);
+                        Console.WriteLine("WARNING: unknown element '{0}' @{1}", unknown.Name, (ln, co));
+                    }
+                }
+
                 result = new Element(name.LocalName, attrs, refrs, elements);
                 return true;
             }
