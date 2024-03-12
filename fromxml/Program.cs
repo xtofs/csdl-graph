@@ -1,40 +1,42 @@
-﻿using SemanticGraph;
+﻿using System.Numerics;
+using SemanticGraph;
 
-internal class Program
+internal partial class Program
 {
-    static readonly XmlParser SchemaParser = new Lazy<XmlParser>(() =>
-    {
-        var member = Node.Parser("Member", ["Name", "Value"]);
-        var @enum = Node.Parser("EnumType", ["Name"], member);
-        var structuralProperty = Node.Parser("Property", ["Name", "Type:ComplexType|EnumType"]);
-        var navigationProperty = Node.Parser("NavigationProperty", ["Name", "Type:EntityType"]);
-        var property = Node.Parser(structuralProperty, navigationProperty);
-        var complex = Node.Parser("ComplexType", ["Name", "BaseType:ComplexType"], property);
-        var propertyRef = Node.Parser("PropertyRef", ["Name:Property", "Alias"]);
-        var key = Node.Parser("Key", [], propertyRef);
-        var entity = Node.Parser("EntityType", ["Name:Property", "Alias"], Node.Parser(key, property));
-        var schema = Node.Parser("Schema", ["Namespace", "Alias"], Node.Parser(entity, complex, @enum));
-        return schema;
-    }).Value;
 
     private static void Main()
     {
-        // var @ref = "Type:Complex|Enum";
-        // var (name, types) = Node.ParseReferenceString(@ref);
-        // System.Console.WriteLine("result: {0}: {1}", name, string.Join(" | ", types));
 
+        var schema = new LabeledGraphSchema
+        {
+            ["Schema"] = (["Namespace", "Alias"], ["EntityType", "ComplexType"]),
+            ["EntityType"] = (["Name"], ["Key", "Property", "NavigationProperty"]),
+            ["ComplexType"] = (["Name"], ["Property", "NavigationProperty"]),
+            ["Key"] = ([], ["PropertyRef"]),
+            ["PropertyRef"] = (["Name", "Alias"], []),
+            ["Property"] = (["Name"], []),
+            ["NavigationProperty"] = (["Name", "Type"], []),
+            //     var member = SemanticGraph.Node.Parser("Member", ["Name", "Value"]);
+            //     var @enum = SemanticGraph.Node.Parser("EnumType", ["Name"], member);
+            //     var structuralProperty = SemanticGraph.Node.Parser("Property", ["Name", "Type:ComplexType|EnumType"]);
+            //     var navigationProperty = SemanticGraph.Node.Parser("NavigationProperty", ["Name", "Type:EntityType"]);
+            //     var property = SemanticGraph.Node.Parser(structuralProperty, navigationProperty);
+            //     var complex = SemanticGraph.Node.Parser("ComplexType", ["Name", "BaseType:ComplexType"], property);
+            //     var propertyRef = SemanticGraph.Node.Parser("PropertyRef", ["Name:Property", "Alias"]);
+            //     var key = SemanticGraph.Node.Parser("Key", [], propertyRef);
+            //     var entity = SemanticGraph.Node.Parser("EntityType", ["Name:Property", "Alias"], SemanticGraph.Node.Parser(key, property));
+            //     var schema = SemanticGraph.Node.Parser("Schema", ["Namespace", "Alias"], SemanticGraph.Node.Parser(entity, complex, @enum));
+            //     return schema;
+            // }
+        };
 
-        if (SchemaParser(XElement.Load("schema.xml", LoadOptions.SetLineInfo), out var schema))
-        {
-            Console.WriteLine(schema);
-            Console.WriteLine(schema.ToXml());
-        }
-        else
-        {
-            Console.WriteLine("failed to Parse");
-        }
+        var graph = new Graph();
+        var xml = XElement.Load("schema.xml", LoadOptions.SetLineInfo);
+        schema.Load(["Schema"], xml, graph);
+
+        // Console.WriteLine(graph);
+        using var w = File.CreateText("mermaid.md");
+        graph.WriteTo(w);
     }
-
-
-    // static readonly RegexOptions options = RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
 }
+
