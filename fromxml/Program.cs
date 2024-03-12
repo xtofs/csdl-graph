@@ -1,42 +1,65 @@
-﻿using System.Numerics;
-using SemanticGraph;
+﻿using SemanticGraph;
 
 internal partial class Program
 {
-
     private static void Main()
     {
-
         var schema = new LabeledGraphSchema
         {
-            ["Schema"] = (["Namespace", "Alias"], ["EntityType", "ComplexType"]),
-            ["EntityType"] = (["Name"], ["Key", "Property", "NavigationProperty"]),
-            ["ComplexType"] = (["Name"], ["Property", "NavigationProperty"]),
-            ["Key"] = ([], ["PropertyRef"]),
-            ["PropertyRef"] = (["Name", "Alias"], []),
-            ["Property"] = (["Name"], []),
-            ["NavigationProperty"] = (["Name", "Type"], []),
-            //     var member = SemanticGraph.Node.Parser("Member", ["Name", "Value"]);
-            //     var @enum = SemanticGraph.Node.Parser("EnumType", ["Name"], member);
-            //     var structuralProperty = SemanticGraph.Node.Parser("Property", ["Name", "Type:ComplexType|EnumType"]);
-            //     var navigationProperty = SemanticGraph.Node.Parser("NavigationProperty", ["Name", "Type:EntityType"]);
-            //     var property = SemanticGraph.Node.Parser(structuralProperty, navigationProperty);
-            //     var complex = SemanticGraph.Node.Parser("ComplexType", ["Name", "BaseType:ComplexType"], property);
-            //     var propertyRef = SemanticGraph.Node.Parser("PropertyRef", ["Name:Property", "Alias"]);
-            //     var key = SemanticGraph.Node.Parser("Key", [], propertyRef);
-            //     var entity = SemanticGraph.Node.Parser("EntityType", ["Name:Property", "Alias"], SemanticGraph.Node.Parser(key, property));
-            //     var schema = SemanticGraph.Node.Parser("Schema", ["Namespace", "Alias"], SemanticGraph.Node.Parser(entity, complex, @enum));
-            //     return schema;
-            // }
+            ["Member"] = (
+                ["Name", "Value"],
+                [],
+                []),
+            ["EnumType"] = (
+                ["Name"],
+                [],
+                ["Member"]),
+            ["Property"] = (
+                ["Name"],
+                [("Type", ["ComplexType", "EnumType"])],
+                []),
+            ["NavigationProperty"] = (
+                ["Name"],
+                [("Type", ["EntityType"])],
+                []),
+            ["StructuralProperty"] = (
+                ["Name"],
+                [("Type", ["ComplexType", "EnumType"])],
+                []),
+            ["ComplexType"] = (
+                ["Name"],
+                [("BaseType", ["ComplexType"])],
+                ["StructuralProperty", "NavigationProperty"]),
+            ["PropertyRef"] = (
+                ["Alias"],
+                [("Name", ["Property"])],
+                []),
+            ["Key"] = (
+                [],
+                [],
+                ["PropertyRef"]),
+            ["EntityType"] = (
+                ["Name"],
+                [("BaseType", ["EntityType"])],
+                ["Key", "StructuralProperty", "NavigationProperty"]),
+            ["Schema"] = (
+                ["Namespace", "Alias"],
+                [],
+                ["EnumType", "EntityType", "ComplexType"]),
         };
 
-        var graph = new Graph();
-        var xml = XElement.Load("schema.xml", LoadOptions.SetLineInfo);
-        schema.Load(["Schema"], xml, graph);
+        var graph = schema.LoadGraph("example.xml");
 
-        // Console.WriteLine(graph);
-        using var w = File.CreateText("mermaid.md");
-        graph.WriteTo(w);
+        graph.WriteTo("example.md", Format);
     }
+
+
+    static string? Format(string Name, IReadOnlyDictionary<string, string> Properties) => Name switch
+    {
+        "Schema" => Properties["Alias"] ?? Properties["Namespace"],
+        "Key" => null,
+        "PropertyRef" => Properties.Get("Alias") ?? Properties.Get("Name"),
+        _ => Properties.Get("Name"),
+    };
 }
 

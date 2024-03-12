@@ -1,3 +1,4 @@
+
 namespace SemanticGraph;
 
 
@@ -7,7 +8,7 @@ public sealed class Graph
     private readonly List<NodeInfo> nodes = [];
     private readonly List<EdgeInfo> edges = [];
 
-    internal int AddNode(string name, IEnumerable<(string, string)> attributes)
+    internal int AddNode(string name, IReadOnlyDictionary<string, string> attributes)
     {
         nodes.Add(new NodeInfo(name, attributes));
         return nodes.Count - 1;
@@ -21,17 +22,25 @@ public sealed class Graph
     public override string ToString()
     {
         var w = new StringWriter();
-        WriteTo(w);
+        WriteTo(w, (l, ps) => $"{ps["Name"]}:{l}");
         return w.ToString();
     }
 
-    public void WriteTo(TextWriter w)
+    public void WriteTo(string path, Func<string, IReadOnlyDictionary<string, string>, string?> format)
+    {
+        using var w = File.CreateText(path);
+        this.WriteTo(w, format);
+        Console.WriteLine("finished writing {0}", path);
+    }
+
+    public void WriteTo(TextWriter w, Func<string, IReadOnlyDictionary<string, string>, string?> format)
     {
         w.WriteLine("```mermaid");
         w.WriteLine("graph");
         foreach (var (i, node) in nodes.Enumerate())
         {
-            var name = node.Properties.Where(a => a.Name == "Name").Select(a => $"{a.Value}: {node.Label}").FirstOrDefault() ?? node.Label;
+            var name = format(node.Label, node.Properties);
+            name = name == null ? node.Label : $"{name}: {node.Label}";
             w.WriteLine("n{0}[{1}]", i, name);
         }
         foreach (var (i, edge) in edges.Enumerate())
@@ -46,18 +55,17 @@ public sealed class Graph
             }
         }
         w.WriteLine("```");
-
     }
 }
 
-internal record struct NodeInfo(string Label, IEnumerable<(string Name, string Value)> Properties)
+internal record struct NodeInfo(string Label, IReadOnlyDictionary<string, string> Properties)
 {
-    public static implicit operator (string Label, IEnumerable<(string, string)> Attributes)(NodeInfo value)
+    public static implicit operator (string Label, IReadOnlyDictionary<string, string> Attributes)(NodeInfo value)
     {
         return (value.Label, value.Properties);
     }
 
-    public static implicit operator NodeInfo((string Label, IEnumerable<(string, string)> Attributes) value)
+    public static implicit operator NodeInfo((string Label, IReadOnlyDictionary<string, string> Attributes) value)
     {
         return new NodeInfo(value.Label, value.Attributes);
     }
