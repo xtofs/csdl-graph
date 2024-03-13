@@ -9,11 +9,11 @@ internal partial class Program
             ["Schema"] = (
                 ["Namespace", "Alias"],
                 [],
-                ["EnumType", "EntityType", "ComplexType"]),
+                [("Elements", ["EnumType", "EntityType", "ComplexType"])]),
             ["EnumType"] = (
                 ["Name"],
                 [],
-                ["Member"]),
+                [("Members", ["Member"])]),
             ["Member"] = (
                 ["Name", "Value"],
                 [],
@@ -21,12 +21,11 @@ internal partial class Program
             ["EntityType"] = (
                 ["Name"],
                 [("BaseType", ["EntityType"])],
-                ["Property", "NavigationProperty"],
-                [("Key", ["PropertyRef"])]),
+                [("Properties", ["Property", "NavigationProperty"]), ("Key", ["PropertyRef"])]),
             ["ComplexType"] = (
                 ["Name"],
                 [("BaseType", ["ComplexType"])],
-                ["Property", "NavigationProperty"]),
+                [("Properties", ["Property", "NavigationProperty"])]),
             ["Property"] = (
                 ["Name"],
                 [("Type", ["ComplexType", "EnumType"])],
