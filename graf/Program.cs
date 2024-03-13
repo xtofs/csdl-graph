@@ -9,15 +9,15 @@ internal partial class Program
             ["Schema"] = (
                 ["Namespace", "Alias"],
                 [],
-                ["EnumType", "EntityType", "ComplexType"], []),
+                ["EnumType", "EntityType", "ComplexType"]),
             ["EnumType"] = (
                 ["Name"],
                 [],
-                ["Member"], []),
+                ["Member"]),
             ["Member"] = (
                 ["Name", "Value"],
                 [],
-                [], []),
+                []),
             ["EntityType"] = (
                 ["Name"],
                 [("BaseType", ["EntityType"])],
@@ -26,24 +26,25 @@ internal partial class Program
             ["ComplexType"] = (
                 ["Name"],
                 [("BaseType", ["ComplexType"])],
-                ["StructuralProperty", "NavigationProperty"], []),
+                ["Property", "NavigationProperty"]),
             ["Property"] = (
                 ["Name"],
                 [("Type", ["ComplexType", "EnumType"])],
-                [], []),
+                []),
             ["NavigationProperty"] = (
                 ["Name"],
                 [("Type", ["EntityType"])],
-                [], []),
+                []),
             ["PropertyRef"] = (
                 ["Alias"],
                 [("Name", ["Property"])],
-                [], []),
+                []),
         };
+        System.Console.WriteLine(schema);
 
-        var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);
+        // var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);
 
-        graph.WriteTo("example.md", GetNodeName);
+        // graph.WriteTo("example.md", GetNodeName);
     }
 
     static string? GetNodeName(string Label, IReadOnlyDictionary<string, string> Properties) => Label switch
