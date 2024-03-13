@@ -9,11 +9,13 @@
 
   <ItemGroup>
     <Using Include="System.Collections" />
+    <Using Include="System.Collections.Immutable" />
     <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Text" />
+    <Using Include="System.Text.RegularExpressions" />
+    <Using Include="System.Xml" />
     <Using Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
+
     <Watch Remove="*.md" />
-    <Watch Remove="*.xml" />
   </ItemGroup>
 </Project>

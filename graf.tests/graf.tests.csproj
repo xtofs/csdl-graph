@@ -22,11 +22,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="System.Text.RegularExpressions" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\graf\graf.csproj" />
-  </ItemGroup>
 </Project>

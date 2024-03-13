@@ -1,51 +1,100 @@
 namespace graf;
 
-public class Graph
+public sealed class Graph
 {
-    record Node(string Label) { }
+    private readonly List<NodeInfo> nodes = [];
+    private readonly List<EdgeInfo> edges = [];
 
-    record Edge(int Source, int Target, string Label, string? Color) { }
-
-    private readonly List<Node> vertices = [];
-
-    private readonly List<Edge> edges = [];
-
-    internal int AddNode(string name)
+    internal int AddNode(string Label, string? Name, IReadOnlyDictionary<string, string> attributes)
     {
-        vertices.Add(new Node(name));
-        return vertices.Count - 1;
+        nodes.Add(new NodeInfo(Label, Name, attributes));
+        return nodes.Count - 1;
     }
 
-    public int AddEdge(int src, int dst, string label, string? color = null)
+    public void AddEdge(int source, int target, string label)
     {
-        edges.Add(new Edge(src, dst, label, color));
-        return edges.Count - 1;
+        edges.Add(new EdgeInfo(source, target, label));
     }
 
-    public void WriteAsMermaid(TextWriter writer)
+    public override string ToString()
     {
-        writer.WriteLine("graph");
-        foreach (var (i, v) in vertices.Enumerate())
+        var w = new StringWriter();
+        WriteTo(w, (l, ps) => $"{ps["Name"]}:{l}");
+        return w.ToString();
+    }
+
+    public void WriteTo(string path, Func<string, IReadOnlyDictionary<string, string>, string?> getName)
+    {
+        using var w = File.CreateText(path);
+        this.WriteTo(w, getName);
+        Console.WriteLine("finished writing {0}", path);
+    }
+
+    public void WriteTo(TextWriter w, Func<string, IReadOnlyDictionary<string, string>, string?> getName)
+    {
+        w.WriteLine("```mermaid");
+        w.WriteLine("graph");
+        foreach (var (i, node) in nodes.Enumerate())
         {
-            writer.WriteLine("{0}[{1}]", i, v.Label);
+            var name = getName(node.Label, node.Properties);
+            name = name == null ? $"{node.Label}" : $"{name}: {node.Label}";
+            w.WriteLine("n{0}[{1}]", i, name);
         }
-        foreach (var edge in edges)
+        foreach (var (i, edge) in edges.Enumerate())
         {
-            if (edge.Label == "has")
+            if (edge.Label == "contains")
             {
-                writer.WriteLine("{0}-->{2}", edge.Source, edge.Label, edge.Target);
+                w.WriteLine("n{0}-->n{1}", edge.Source, edge.Target);
             }
             else
             {
-                writer.WriteLine("{0}-.{1}.->{2}", edge.Source, edge.Label, edge.Target);
+                w.WriteLine("n{0}-. {1} .-> n{2}", edge.Source, edge.Label, edge.Target);
             }
         }
+        w.WriteLine("```");
+    }
 
-        var groups = edges.Enumerate().Where(g => g.Item2.Color != null).GroupBy(e => e.Item2.Color, e => e.Item1);
-        foreach (var group in groups)
+
+
+    public static Graph LoadGraph(string path, LabeledPropertyGraphSchema schema, Func<string, IReadOnlyDictionary<string, string>, string?> getNodeName)
+    {
+        var xml = XElement.Load(path, LoadOptions.SetLineInfo);
+
+        var builder = new GraphBuilder(schema, getNodeName);
+        builder.Load(["Schema"], xml, null, ImmutableList<string>.Empty);
+
+        foreach (var x in builder.NameTable)
         {
-            writer.WriteLine("linkStyle {0} stroke:{1},color:{1};", string.Join(",", group), group.Key);
+            Console.WriteLine("{0} : {1}", x.Key, x.Value);
         }
+        builder.Resolve();
+
+        return builder.Graph;
     }
 }
 
+internal record struct NodeInfo(string Label, string? Name, IReadOnlyDictionary<string, string> Properties)
+{
+    public static implicit operator (string Label, string? Name, IReadOnlyDictionary<string, string> Attributes)(NodeInfo value)
+    {
+        return (value.Label, value.Name, value.Properties);
+    }
+
+    public static implicit operator NodeInfo((string Label, string? Name, IReadOnlyDictionary<string, string> Attributes) value)
+    {
+        return new NodeInfo(value.Label, value.Name, value.Attributes);
+    }
+}
+
+internal record struct EdgeInfo(int Source, int Target, string Label)
+{
+    public static implicit operator (int Source, int Target, string Label)(EdgeInfo value)
+    {
+        return (value.Source, value.Target, value.Label);
+    }
+
+    public static implicit operator EdgeInfo((int Source, int target, string Label) value)
+    {
+        return new EdgeInfo(value.Source, value.target, value.Label);
+    }
+}

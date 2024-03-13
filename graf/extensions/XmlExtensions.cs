@@ -1,5 +1,5 @@
 using System.Xml.Linq;
-namespace SemanticGraph;
+namespace graf;
 
 static class XmlExtensions
 {

@@ -1,4 +1,4 @@
-namespace SemanticGraph
+namespace graf
 {
     public static class ReadOnlyDictionaryExtensions
     {
