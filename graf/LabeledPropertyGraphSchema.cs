@@ -27,11 +27,12 @@ public class LabeledPropertyGraphSchema : IEnumerable
                 w.WriteLine("    {0}: Box<{1}>", r.Name, string.Join("|", r.Types));
             }
 
+            var multi = def.Children.Length > 1;
             foreach (var (i, r) in def.Children.Enumerate())
             {
-                w.WriteLine("    {0}{1}: Collection<{2}>",
-                    i == 0 ? "default " : "",
+                w.WriteLine("    {0}: {1}Collection<{2}>",
                     r.Name,
+                    multi && i == 0 ? "@default " : "",
                     string.Join("|", r.Types));
             }
             w.WriteLine("}");

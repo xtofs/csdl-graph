@@ -41,9 +41,9 @@ internal partial class Program
         };
         System.Console.WriteLine(schema);
 
-        // var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);
+        var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);
 
-        // graph.WriteTo("example.md", GetNodeName);
+        graph.WriteTo("example.md", GetNodeName);
     }
 
     static string? GetNodeName(string Label, IReadOnlyDictionary<string, string> Properties) => Label switch
