@@ -29,16 +29,16 @@ public class LabeledPropertyGraphSchema : IEnumerable
     }
 }
 
-public record struct TypeDef(string[] Attributes, Reference[] References, string[] Children)
+public record struct TypeDef(string[] Attributes, Reference[] References, string[] Children, Reference[] NamedChildren)
 {
-    public static implicit operator (string[] Attributes, Reference[] References, string[] Children)(TypeDef value)
+    public static implicit operator (string[] Attributes, Reference[] References, string[] Children, Reference[] NamedChildren)(TypeDef value)
     {
-        return (value.Attributes, value.References, value.Children);
+        return (value.Attributes, value.References, value.Children, value.NamedChildren);
     }
 
-    public static implicit operator TypeDef((string[] Attributes, Reference[] References, string[] Children) value)
+    public static implicit operator TypeDef((string[] Attributes, Reference[] References, string[] Children, Reference[] NamedChildren) value)
     {
-        return new TypeDef(value.Attributes, value.References, value.Children);
+        return new TypeDef(value.Attributes, value.References, value.Children, value.NamedChildren);
     }
 }
 

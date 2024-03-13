@@ -9,39 +9,36 @@ internal partial class Program
             ["Schema"] = (
                 ["Namespace", "Alias"],
                 [],
-                ["EnumType", "EntityType", "ComplexType"]),
+                ["EnumType", "EntityType", "ComplexType"], []),
             ["EnumType"] = (
                 ["Name"],
                 [],
-                ["Member"]),
+                ["Member"], []),
             ["Member"] = (
                 ["Name", "Value"],
                 [],
-                []),
+                [], []),
             ["EntityType"] = (
                 ["Name"],
                 [("BaseType", ["EntityType"])],
-                ["Key", "Property", "NavigationProperty"]),
+                ["Property", "NavigationProperty"],
+                [("Key", ["PropertyRef"])]),
             ["ComplexType"] = (
                 ["Name"],
                 [("BaseType", ["ComplexType"])],
-                ["StructuralProperty", "NavigationProperty"]),
+                ["StructuralProperty", "NavigationProperty"], []),
             ["Property"] = (
                 ["Name"],
                 [("Type", ["ComplexType", "EnumType"])],
-                []),
+                [], []),
             ["NavigationProperty"] = (
                 ["Name"],
                 [("Type", ["EntityType"])],
-                []),
+                [], []),
             ["PropertyRef"] = (
                 ["Alias"],
                 [("Name", ["Property"])],
-                []),
-            ["Key"] = (
-                [],
-                [],
-                ["PropertyRef"]),
+                [], []),
         };
 
         var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);

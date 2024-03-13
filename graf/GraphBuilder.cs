@@ -12,7 +12,7 @@ internal record GraphBuilder(LabeledPropertyGraphSchema Schema, Func<string, IRe
     {
         if (Names.Contains(xml.Name.LocalName))
         {
-            var (attributes, references, children) = Schema[xml.Name.LocalName];
+            var (attributes, references, children, named) = Schema[xml.Name.LocalName];
 
             var attrs = from a in attributes
                         let v = xml.Attribute(a)
@@ -44,6 +44,17 @@ internal record GraphBuilder(LabeledPropertyGraphSchema Schema, Func<string, IRe
                 foreach (var e in xml.Elements())
                 {
                     Load(children, e, id, qn);
+                }
+            }
+            foreach (var (Key, Types) in named)
+            {
+                var element = xml.Element(Key);
+                if (element != null)
+                {
+                    foreach (var e in element.Elements())
+                    {
+                        Load(Types, e, id, qn);
+                    }
                 }
             }
         }
