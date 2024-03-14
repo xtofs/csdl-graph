@@ -1,56 +1,60 @@
 ﻿using graf;
 
-internal partial class Program
+var schema = new LabeledPropertyGraphSchema
 {
-    private static void Main()
+    ["Schema"] = new NodeDef
     {
-        var schema = new LabeledPropertyGraphSchema
-        {
-            ["Schema"] = (
-                ["Namespace", "Alias"],
-                [],
-                [("Elements", ["EnumType", "EntityType", "ComplexType"])]),
-            ["EnumType"] = (
-                ["Name"],
-                [],
-                [("Members", ["Member"])]),
-            ["Member"] = (
-                ["Name", "Value"],
-                [],
-                []),
-            ["EntityType"] = (
-                ["Name"],
-                [("BaseType", ["EntityType"])],
-                [("Properties", ["Property", "NavigationProperty"]), ("Key", ["PropertyRef"])]),
-            ["ComplexType"] = (
-                ["Name"],
-                [("BaseType", ["ComplexType"])],
-                [("Properties", ["Property", "NavigationProperty"])]),
-            ["Property"] = (
-                ["Name"],
-                [("Type", ["ComplexType", "EnumType"])],
-                []),
-            ["NavigationProperty"] = (
-                ["Name"],
-                [("Type", ["EntityType"])],
-                []),
-            ["PropertyRef"] = (
-                ["Alias"],
-                [("Name", ["Property"])],
-                []),
-        };
-        System.Console.WriteLine(schema);
-
-        var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);
-
-        graph.WriteTo("example.md", GetNodeName);
-    }
-
-    static string? GetNodeName(string Label, IReadOnlyDictionary<string, string> Properties) => Label switch
+        Properties = ["Namespace", "Alias"],
+        Contained = [("Elements", ["EnumType", "EntityType", "ComplexType"])]
+    },
+    ["EnumType"] = new NodeDef
     {
-        "Schema" => Properties["Alias"] ?? Properties["Namespace"],
-        "PropertyRef" => Properties.Get("Alias") ?? Properties.Get("Name"),
-        _ => Properties.Get("Name"),
-    };
-}
+        Properties = ["Name"],
+        Contained = [("Members", ["Member"])]
+    },
+    ["Member"] = new NodeDef
+    {
+        Properties = ["Name", ("Value", Primitive.Int)],
+    },
+    ["EntityType"] = new NodeDef
+    {
+        Properties = ["Name"],
+        References = [("BaseType", ["EntityType"])],
+        Contained = [("Properties", ["Property", "NavigationProperty"]), ("Key", ["PropertyRef"])]
+    },
+    ["ComplexType"] = new NodeDef
+    {
+        Properties = ["Name"],
+        References = [("BaseType", ["ComplexType"])],
+        Contained = [("Properties", ["Property", "NavigationProperty"])]
+    },
+    ["Property"] = new NodeDef
+    {
+        Properties = ["Name"],
+        References = [("Type", ["ComplexType", "EnumType"])],
+    },
+    ["NavigationProperty"] = new NodeDef
+    {
+        Properties = ["Name", "ContainsTarget"],
+        References = [("Type", ["EntityType"])],
+    },
+    ["PropertyRef"] = new NodeDef
+    {
+        Properties = ["Alias"],
+        References = [("Name", ["Property"])],
+    },
+};
+
+File.WriteAllText("schema.lpg", schema.ToString());
+
+var graph = Graph.LoadGraph("example.xml", schema, GetNodeName);
+graph.WriteTo("example.md", GetNodeName);
+
+
+static string? GetNodeName(string Label, IReadOnlyDictionary<string, string> Properties) => Label switch
+{
+    "Schema" => Properties["Alias"] ?? Properties["Namespace"],
+    "PropertyRef" => Properties.Get("Alias") ?? Properties.Get("Name"),
+    _ => Properties.Get("Name"),
+};
 

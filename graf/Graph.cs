@@ -34,13 +34,13 @@ public sealed class Graph
     {
         w.WriteLine("```mermaid");
         w.WriteLine("graph");
-        foreach (var (i, node) in nodes.Enumerate())
+        foreach (var (i, node) in nodes.WidthIndex())
         {
             var name = getName(node.Label, node.Properties);
             name = name == null ? $"{node.Label}" : $"{name}: {node.Label}";
             w.WriteLine("n{0}[{1}]", i, name);
         }
-        foreach (var (i, edge) in edges.Enumerate())
+        foreach (var (i, edge) in edges.WidthIndex())
         {
             if (edge.Label == "contains")
             {
@@ -60,7 +60,7 @@ public sealed class Graph
     {
         var xml = XElement.Load(path, LoadOptions.SetLineInfo);
 
-        var builder = new GraphBuilder(schema, getNodeName);
+        var builder = new XmlCsdlLoader(schema, getNodeName);
         builder.Load(["Schema"], xml, null, ImmutableList<string>.Empty);
 
         foreach (var x in builder.NameTable)

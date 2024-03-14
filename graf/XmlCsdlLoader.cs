@@ -1,6 +1,6 @@
 namespace graf;
 
-internal record GraphBuilder(LabeledPropertyGraphSchema Schema, Func<string, IReadOnlyDictionary<string, string>, string?> GetName)
+internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, Func<string, IReadOnlyDictionary<string, string>, string?> GetName)
 {
     public Graph Graph { get; private set; } = new();
 
@@ -15,9 +15,9 @@ internal record GraphBuilder(LabeledPropertyGraphSchema Schema, Func<string, IRe
             var (attributes, references, children) = Schema[xml.Name.LocalName];
 
             var attrs = from a in attributes
-                        let v = xml.Attribute(a)
+                        let v = xml.Attribute(a.Name)
                         where v != null
-                        select (a, v.Value);
+                        select (a.Name, v.Value);
 
             var name = GetName(xml.Name.LocalName, attrs.ToDictionary());
             if (name != null) { qn = qn.Add(name); }
@@ -26,7 +26,7 @@ internal record GraphBuilder(LabeledPropertyGraphSchema Schema, Func<string, IRe
             NameTable.TryAdd(string.Join("/", qn), id);
 
             var refs =
-               from r in references
+               from r in references ?? []
                let p = xml.Attribute(r.Name)
                where p != null
                select (r.Name, p.Value);
@@ -40,7 +40,7 @@ internal record GraphBuilder(LabeledPropertyGraphSchema Schema, Func<string, IRe
                 Graph.AddEdge(parentId.Value, id, "contains");
             }
 
-            foreach (var (i, (Key, Types)) in children.Enumerate())
+            foreach (var (i, (Key, Types)) in children.WidthIndex())
             {
                 var element = i == 0 ? xml : xml.Element(Key);
                 if (element != null)

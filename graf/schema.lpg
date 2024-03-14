@@ -1,43 +1,45 @@
-
+class Schema {
+    Namespace: String;
+    Alias: String;
+    Elements: Collection<EnumType|EntityType|ComplexType>;
+}
 
 class EnumType {
-    Name: string
-    Members: Collection<Member>
+    Name: String;
+    Members: Collection<Member>;
 }
 
 class Member {
-    Name: string
-    Value: string
-}
-
-
-class Property {
-    Name: string
-    Type: Box<ComplexType|EnumType>
-}
-
-class Schema {
-    Namespace: string
-    Alias: string
-    Elements: Collection<EnumType|EntityType|ComplexType>
+    Name: String;
+    Value: Int;
 }
 
 class EntityType {
-    Name: string
-    BaseType: Box<EntityType>
-    Properties: @default Collection<Property|NavigationProperty>
-    Key: Collection<PropertyRef>
+    Name: String;
+    BaseType: Box<EntityType>;
+    Properties: @default Collection<Property|NavigationProperty>;
+    Key: Collection<PropertyRef>;
 }
+
 class ComplexType {
-    Name: string
-    BaseType: Box<ComplexType>
-    Properties: Collection<Property|NavigationProperty>
+    Name: String;
+    BaseType: Box<ComplexType>;
+    Properties: Collection<Property|NavigationProperty>;
 }
+
+class Property {
+    Name: String;
+    Type: Box<ComplexType|EnumType>;
+}
+
 class NavigationProperty {
-    Name: string
-    Type: Box<EntityType>
+    Name: String;
+    ContainsTarget: String;
+    Type: Box<EntityType>;
 }
+
 class PropertyRef {
-    Alias: string
-    Name: Box<Property>
+    Alias: String;
+    Name: Box<Property>;
 }
+
