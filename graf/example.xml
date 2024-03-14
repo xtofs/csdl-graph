@@ -1,4 +1,5 @@
-<Schema Alias="self" Namespace="example.org">
+<?xml-model href="https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/os/schemas/edm.xsd"?>
+<Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Alias="self" Namespace="example.org">
     <EntityType Name="Employee">
         <Key>
             <PropertyRef Name="Name" />
