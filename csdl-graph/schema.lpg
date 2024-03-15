@@ -1,50 +1,90 @@
 class Schema {
-    Namespace: String;
-    Alias: String;
+    // properties (of primitive values)
+    Namespace: string;
+    Alias: string;
+
+    // child (contained) nodes
     Elements: Collection<EnumType|EntityType|ComplexType|PrimitiveType>;
 }
 
 class EnumType {
-    Name: String;
+    // properties (of primitive values)
+    Name: string;
+
+    // child (contained) nodes
     Members: Collection<Member>;
 }
 
 class Member {
-    Name: String;
-    Value: Int;
+    // properties (of primitive values)
+    Name: string;
+    Value: number;
 }
 
 class EntityType {
-    Name: String;
+    // properties (of primitive values)
+    Name: string;
+
+    // references (associations) to other nodes
     BaseType: Box<EntityType>;
-    Properties: @default Collection<Property|NavigationProperty>;
+
+    // child (contained) nodes
+    Properties: Collection<Property|NavigationProperty>;
     Key: Collection<PropertyRef>;
 }
 
 class ComplexType {
-    Name: String;
+    // properties (of primitive values)
+    Name: string;
+
+    // references (associations) to other nodes
     BaseType: Box<ComplexType>;
+
+    // child (contained) nodes
     Properties: Collection<Property|NavigationProperty>;
 }
 
 class Property {
-    Name: String;
-    Nullable: Bool;
+    // properties (of primitive values)
+    Name: string;
+    Nullable: boolean;
+
+    // references (associations) to other nodes
     Type: Box<ComplexType|EnumType|PrimitiveType>;
 }
 
 class NavigationProperty {
-    Name: String;
-    ContainsTarget: String;
+    // properties (of primitive values)
+    Name: string;
+    ContainsTarget: string;
+
+    // references (associations) to other nodes
     Type: Box<EntityType>;
 }
 
 class PropertyRef {
-    Alias: String;
+    // properties (of primitive values)
+    Alias: string;
+
+    // references (associations) to other nodes
     Name: Box<Property>;
 }
 
 class PrimitiveType {
-    Name: String;
+    // properties (of primitive values)
+    Name: string;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+type Box<T> = any
+type Collection<T> = any

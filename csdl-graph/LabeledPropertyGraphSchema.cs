@@ -26,27 +26,50 @@ public class LabeledPropertyGraphSchema : IEnumerable
         foreach (var (name, def) in dictionary)
         {
             w.WriteLine("class {0} {{", name);
-            foreach (var p in def.Properties ?? [])
+
+
+            foreach (var (i, p) in def.Properties.WidthIndex())
             {
-                w.WriteLine("    {0}: {1};", p.Name, p.Type.ToString());
+                if (i == 0)
+                {
+                    w.WriteLine("    // properties (of primitive values)");
+                }
+
+                w.WriteLine("    {0}: {1};", p.Name, p.Type.Name());
             }
 
-            foreach (var r in def.References ?? [])
+            foreach (var (i, r) in def.References.WidthIndex())
             {
+                if (i == 0)
+                {
+                    w.WriteLine();
+                    w.WriteLine("    // references (associations) to other nodes");
+                }
+
                 w.WriteLine("    {0}: Box<{1}>;", r.Name, string.Join("|", r.Types));
             }
 
-            var multi = def.Contained?.Length > 1;
-            foreach (var (i, r) in def.Contained.WidthIndex())
+            // var multi = def.Contained?.Length > 1;
+            foreach (var (i, c) in def.Contained.WidthIndex())
             {
-                w.WriteLine("    {0}: {1}Collection<{2}>;",
-                    r.Name,
-                    multi && i == 0 ? "@default " : "",
-                    string.Join("|", r.Types));
+                if (i == 0)
+                {
+                    w.WriteLine();
+                    w.WriteLine("    // child (contained) nodes");
+                }
+
+                w.WriteLine("    {0}: Collection<{1}>;",
+                    c.Name,
+                    // multi && i == 0 ? "@default " : "",
+                    string.Join("|", c.Types));
             }
             w.WriteLine("}");
             w.WriteLine();
         }
+
+        w.WriteLine(new string('\n', 10));
+        w.WriteLine("type Box<T> = any");
+        w.WriteLine("type Collection<T> = any");
     }
 
     public override string ToString()
@@ -79,11 +102,11 @@ public enum Primitive { String, Bool, Int }
 
 public static class PrimitiveExtensions
 {
-    public static string ToString(this Primitive primitive) => primitive switch
+    public static string Name(this Primitive primitive) => primitive switch
     {
         Primitive.String => "string",
-        Primitive.Bool => "bool",
-        Primitive.Int => "int",
+        Primitive.Bool => "boolean",
+        Primitive.Int => "number",
         _ => throw new InvalidDataException($"{primitive} is an unkonw Primitive value"),
     };
 }
