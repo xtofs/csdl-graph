@@ -1,9 +1,11 @@
 namespace graf;
 
-public sealed class Graph
+public sealed class Graph(Func<string, IReadOnlyDictionary<string, string>, string?> getNodeName)
 {
     private readonly List<NodeInfo> nodes = [];
     private readonly List<EdgeInfo> edges = [];
+
+    public Func<string, IReadOnlyDictionary<string, string>, string?> GetNodeName { get; } = getNodeName;
 
     internal int AddNode(string Label, string? Name, IReadOnlyDictionary<string, string> attributes)
     {
@@ -19,24 +21,24 @@ public sealed class Graph
     public override string ToString()
     {
         var w = new StringWriter();
-        WriteTo(w, (l, ps) => $"{ps["Name"]}:{l}");
+        WriteTo(w);
         return w.ToString();
     }
 
-    public void WriteTo(string path, Func<string, IReadOnlyDictionary<string, string>, string?> getName)
+    public void WriteTo(string path)
     {
         using var w = File.CreateText(path);
-        this.WriteTo(w, getName);
+        this.WriteTo(w);
         Console.WriteLine("finished writing {0}", path);
     }
 
-    public void WriteTo(TextWriter w, Func<string, IReadOnlyDictionary<string, string>, string?> getName)
+    public void WriteTo(TextWriter w)
     {
         w.WriteLine("```mermaid");
         w.WriteLine("graph");
         foreach (var (i, node) in nodes.WidthIndex())
         {
-            var name = getName(node.Label, node.Properties);
+            var name = GetNodeName(node.Label, node.Properties);
             name = name == null ? $"{node.Label}" : $"{name}: {node.Label}";
             w.WriteLine("n{0}[{1}]", i, name);
         }
@@ -55,18 +57,16 @@ public sealed class Graph
     }
 
 
-
-    public static Graph LoadGraph(string path, LabeledPropertyGraphSchema schema, Func<string, IReadOnlyDictionary<string, string>, string?> getNodeName)
+    public static Graph LoadGraph(LabeledPropertyGraphSchema schema, params string[] paths)
     {
-        var xml = XElement.Load(path, LoadOptions.SetLineInfo);
+        var builder = new XmlCsdlLoader(schema, schema.GetNodeName);
 
-        var builder = new XmlCsdlLoader(schema, getNodeName);
-        builder.Load(["Schema"], xml, null, ImmutableList<string>.Empty);
-
-        foreach (var x in builder.NameTable)
+        var xmls = paths.Select(path => XElement.Load(path, LoadOptions.SetLineInfo));
+        foreach (var xml in xmls)
         {
-            Console.WriteLine("{0} : {1}", x.Key, x.Value);
+            builder.Load(["Schema"], xml);
         }
+
         builder.Resolve();
 
         return builder.Graph;

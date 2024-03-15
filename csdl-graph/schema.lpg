@@ -1,7 +1,7 @@
 class Schema {
     Namespace: String;
     Alias: String;
-    Elements: Collection<EnumType|EntityType|ComplexType>;
+    Elements: Collection<EnumType|EntityType|ComplexType|PrimitiveType>;
 }
 
 class EnumType {
@@ -29,7 +29,8 @@ class ComplexType {
 
 class Property {
     Name: String;
-    Type: Box<ComplexType|EnumType>;
+    Nullable: Bool;
+    Type: Box<ComplexType|EnumType|PrimitiveType>;
 }
 
 class NavigationProperty {
@@ -41,5 +42,9 @@ class NavigationProperty {
 class PropertyRef {
     Alias: String;
     Name: Box<Property>;
+}
+
+class PrimitiveType {
+    Name: String;
 }
 

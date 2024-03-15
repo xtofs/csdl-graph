@@ -4,7 +4,7 @@
         <Key>
             <PropertyRef Name="Name" />
         </Key>
-        <Property Name="Name" Type="Edm.String" Nullable="false" />
+        <Property Name="Name" Type="Edm/String" Nullable="false" />
     </EntityType>
     <EntityType Name="ReportingLine">
         <Key>

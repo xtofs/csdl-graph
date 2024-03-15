@@ -1,28 +1,30 @@
 namespace graf;
 
-internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, Func<string, IReadOnlyDictionary<string, string>, string?> GetName)
+internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, Func<string, IReadOnlyDictionary<string, string>, string?> GetNodeName)
 {
-    public Graph Graph { get; private set; } = new();
+    public Graph Graph { get; private set; } = new(GetNodeName);
 
     public Dictionary<string, int> NameTable { get; private set; } = [];
 
     public List<(int Source, string Target, string Label)> Links = [];
 
-    public void Load(string[] Names, XElement xml, int? parentId, IImmutableList<string> qn)
+
+    public void Load(string[] Names, XElement xml, int? parentId = null, IImmutableList<string> qn = null!)
     {
+        qn ??= ImmutableList<string>.Empty;
         if (Names.Contains(xml.Name.LocalName))
         {
-            var (attributes, references, children) = Schema[xml.Name.LocalName];
+            var (properties, references, children) = Schema[xml.Name.LocalName];
 
-            var attrs = from a in attributes
-                        let v = xml.Attribute(a.Name)
+            var props = from p in properties
+                        let v = xml.Attribute(p.Name)
                         where v != null
-                        select (a.Name, v.Value);
+                        select (p.Name, v.Value);
 
-            var name = GetName(xml.Name.LocalName, attrs.ToDictionary());
+            var name = this.GetNodeName(xml.Name.LocalName, props.ToDictionary());
             if (name != null) { qn = qn.Add(name); }
 
-            var id = Graph.AddNode(xml.Name.LocalName, name, attrs.ToDictionary());
+            var id = Graph.AddNode(xml.Name.LocalName, name, props.ToDictionary());
             NameTable.TryAdd(string.Join("/", qn), id);
 
             var refs =

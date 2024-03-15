@@ -5,6 +5,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PublishAot>True</PublishAot>
+    <PublishTrimmed>True</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +19,17 @@
     <Using Include="System.Xml.Linq" />
 
     <Watch Remove="*.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="example.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="edm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="core.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

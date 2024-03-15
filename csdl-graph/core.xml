@@ -1,0 +1,5 @@
+<?xml-model href="https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/os/schemas/edm.xsd"?>
+<Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Alias="Core"
+    Namespace="annotations.odata.org">
+
+</Schema>

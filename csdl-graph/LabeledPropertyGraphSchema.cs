@@ -1,8 +1,16 @@
+
 namespace graf;
 
 public class LabeledPropertyGraphSchema : IEnumerable
 {
     private readonly Dictionary<String, NodeDef> dictionary = [];
+
+    public LabeledPropertyGraphSchema(Func<string, IReadOnlyDictionary<string, string>, string?> getNodeName)
+    {
+        GetNodeName = getNodeName;
+    }
+
+    public Func<string, IReadOnlyDictionary<string, string>, string?> GetNodeName { get; }
 
     public NodeDef this[string key]
     {
@@ -20,7 +28,7 @@ public class LabeledPropertyGraphSchema : IEnumerable
             w.WriteLine("class {0} {{", name);
             foreach (var p in def.Properties ?? [])
             {
-                w.WriteLine("    {0}: {1};", p.Name, p.Type);
+                w.WriteLine("    {0}: {1};", p.Name, p.Type.ToString());
             }
 
             foreach (var r in def.References ?? [])
@@ -55,9 +63,6 @@ public readonly record struct NodeDef(
     Reference[] Contained
 )
 {
-    // public Property[] Properties { get; init; } = Properties ?? [];
-    // public Reference[] References { get; init; } = References ?? [];
-    // public Reference[] Contained { get; init; } = Contained ?? [];
 
     public static implicit operator (Property[] Properties, Reference[] References, Reference[] Children)(NodeDef value)
     {
@@ -71,6 +76,18 @@ public readonly record struct NodeDef(
 }
 
 public enum Primitive { String, Bool, Int }
+
+public static class PrimitiveExtensions
+{
+    public static string ToString(this Primitive primitive) => primitive switch
+    {
+        Primitive.String => "string",
+        Primitive.Bool => "bool",
+        Primitive.Int => "int",
+        _ => throw new InvalidDataException($"{primitive} is an unkonw Primitive value"),
+    };
+}
+
 public record struct Reference(string Name, string[] Types)
 {
     public static implicit operator (string Name, string[] Types)(Reference value)
@@ -82,6 +99,8 @@ public record struct Reference(string Name, string[] Types)
     {
         return new Reference(value.Name, value.Types);
     }
+
+
 }
 
 public record struct Property(string Name, Primitive Type)

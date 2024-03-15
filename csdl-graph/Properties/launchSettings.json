@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "csdl-graph": {
+      "commandName": "Project",
+      "workingDirectory": "D:\\csdl-graph\\csdl-graph"
+    }
+  }
+}
