@@ -89,7 +89,7 @@ public readonly record struct NodeDef(
 
     public static implicit operator (Property[] Properties, Reference[] References, Reference[] Children)(NodeDef value)
     {
-        return (value.Properties, value.References, value.Contained);
+        return (value.Properties ?? [], value.References ?? [], value.Contained ?? []);
     }
 
     public static implicit operator NodeDef((Property[] Properties, Reference[] References, Reference[] Children) value)

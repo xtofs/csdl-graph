@@ -5,6 +5,7 @@
             <PropertyRef Name="Name" />
         </Key>
         <Property Name="Name" Type="Edm/String" Nullable="false" />
+        <Annotation Term="Core/Description" String="a full or part time employee" />
     </EntityType>
     <EntityType Name="ReportingLine">
         <Key>

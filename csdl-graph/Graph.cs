@@ -61,10 +61,10 @@ public sealed class Graph(Func<string, IReadOnlyDictionary<string, string>, stri
     {
         var builder = new XmlCsdlLoader(schema, schema.GetNodeName);
 
-        var xmls = paths.Select(path => XElement.Load(path, LoadOptions.SetLineInfo));
-        foreach (var xml in xmls)
+        var xmls = paths.Select(path => (System.IO.Path.Combine(Environment.CurrentDirectory, path), XElement.Load(path, LoadOptions.SetLineInfo)));
+        foreach (var (path, xml) in xmls)
         {
-            builder.Load(["Schema"], xml);
+            builder.Load(["Schema"], xml, path);
         }
 
         builder.Resolve();

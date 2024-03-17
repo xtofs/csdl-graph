@@ -5,7 +5,7 @@ var schema = new LabeledPropertyGraphSchema(GetNodeName)
     ["Schema"] = new NodeDef
     {
         Properties = ["Namespace", "Alias"],
-        Contained = [("Elements", ["EnumType", "EntityType", "ComplexType", "PrimitiveType"])]
+        Contained = [("Elements", ["EnumType", "EntityType", "ComplexType", "PrimitiveType", "Term"])]
     },
     ["EnumType"] = new NodeDef
     {
@@ -20,7 +20,7 @@ var schema = new LabeledPropertyGraphSchema(GetNodeName)
     {
         Properties = ["Name"],
         References = [("BaseType", ["EntityType"])],
-        Contained = [("Properties", ["Property", "NavigationProperty"]), ("Key", ["PropertyRef"])]
+        Contained = [("Properties", ["Property", "NavigationProperty", "Annotation"]), ("Key", ["PropertyRef"])]
     },
     ["ComplexType"] = new NodeDef
     {
@@ -47,7 +47,24 @@ var schema = new LabeledPropertyGraphSchema(GetNodeName)
     {
         Properties = ["Name"],
     },
+
+
+    // https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#_Toc38530405
+    ["Annotation"] = new NodeDef
+    {
+        Properties = [("Qualifier", Primitive.String)],
+        References = [("Term", ["Term"])],
+    },
+
+    ["Term"] = new NodeDef
+    {
+        Properties = [("Name", Primitive.String)],
+        References = [("Type", ["ComplexType", "EnumType", "PrimitiveType"]), ("BaseTerm", ["Term"])],
+        Contained = [("Elements", ["Annotation"])]
+    },
 };
+
+Environment.CurrentDirectory = "D:/source/csdl-graph/csdl-graph/data"; // System.IO.Path.Combine(Environment.CurrentDirectory, "data");
 
 File.WriteAllText("schema.lpg", schema.ToString());
 

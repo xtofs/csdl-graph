@@ -1,0 +1,21 @@
+<?xml-model href="https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/os/schemas/edm.xsd"?>
+<Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Alias="Core"
+    Namespace="annotations.odata.org">
+    <!--
+    https://github.com/oasis-tcs/odata-vocabularies/blob/main/vocabularies/Org.OData.Core.V1.xml#L105 -->
+    <Term Name="Description" Type="Edm/String">
+        <Annotation Term="Core/Description" String="A brief description of a model element" />
+        <Annotation Term="Core/IsLanguageDependent" />
+    </Term>
+
+    <Term Name="IsLanguageDependent" Type="Core.Tag" Nullable="false" DefaultValue="true"
+        AppliesTo="Term Property">
+        <Annotation Term="Core.Description"
+            String="Properties and terms annotated with this term are language-dependent" />
+        <Annotation Term="Core.RequiresType" String="Edm.String" />
+    </Term>
+
+    <TypeDefinition Name="Tag" UnderlyingType="Edm.Boolean">
+        <Annotation Term="Core.Description" String="This is the type to use for all tagging terms" />
+    </TypeDefinition>
+</Schema>

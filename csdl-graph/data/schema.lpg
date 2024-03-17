@@ -4,7 +4,7 @@ class Schema {
     Alias: string;
 
     // child (contained) nodes
-    Elements: Collection<EnumType|EntityType|ComplexType|PrimitiveType>;
+    Elements: Collection<EnumType|EntityType|ComplexType|PrimitiveType|Term>;
 }
 
 class EnumType {
@@ -86,11 +86,13 @@ class Annotation {
 class Term {
     // properties (of primitive values)
     Name: string;
-    : string;
 
     // references (associations) to other nodes
     Type: Box<ComplexType|EnumType|PrimitiveType>;
     BaseTerm: Box<Term>;
+
+    // child (contained) nodes
+    Elements: Collection<Annotation>;
 }
 
 
