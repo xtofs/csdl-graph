@@ -1,6 +1,6 @@
-namespace graf;
+namespace csdlGraph;
 
-internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, Func<string, IReadOnlyDictionary<string, string>, string?> GetNodeName)
+internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc GetNodeName)
 {
     public Graph Graph { get; private set; } = new(GetNodeName);
 
@@ -24,11 +24,9 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, Func<string, IR
                          where v != null
                          select (p.Name, v.Value)).ToDictionary();
 
-            var name = this.GetNodeName(xml.Name.LocalName, props);
-            if (name != null) { qn = qn.Add(name); }
 
-            var id = Graph.AddNode(xml.Name.LocalName, name, props);
-            NameTable.TryAdd(string.Join("/", qn), id);
+            var id = Graph.AddNode(xml.Name.LocalName, props);
+
 
             var refs =
                from r in references
@@ -39,6 +37,10 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, Func<string, IR
             {
                 Links.Add((Source: id, Target: Value, Label: Name));
             }
+
+            // add to name table after references are created
+            qn = qn.Add(Graph.NodeName(id));
+            NameTable.TryAdd(string.Join("/", qn), id);
 
             // verify
             var allowedAttrs = properties.Select(p => p.Name).Concat(references.Select(r => r.Name)).Prepend("xmlns");

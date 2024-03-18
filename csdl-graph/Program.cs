@@ -1,11 +1,18 @@
-﻿using graf;
+﻿using csdlGraph;
 
-var schema = new LabeledPropertyGraphSchema(GetNodeName)
+var schema = new LabeledPropertyGraphSchema
 {
     ["Schema"] = new NodeDef
     {
         Properties = ["Namespace", "Alias"],
-        Contained = [("Elements", ["EnumType", "EntityType", "ComplexType", "PrimitiveType", "Term"])]
+        Contained = [("Elements", ["EnumType", "EntityType", "ComplexType", "PrimitiveType", "TypeDefinition", "Term"])]
+    },
+
+    ["TypeDefinition"] = new NodeDef
+    {
+        Properties = ["Name"],
+        References = [("UnderlyingType", ["PrimitiveType"])],
+        Contained = [("Elements", ["Annotation"])]
     },
     ["EnumType"] = new NodeDef
     {
@@ -14,7 +21,7 @@ var schema = new LabeledPropertyGraphSchema(GetNodeName)
     },
     ["Member"] = new NodeDef
     {
-        Properties = ["Name", ("Value", Primitive.Int)],
+        Properties = ["Name", ("Value", PropertyType.Int)],
     },
     ["EntityType"] = new NodeDef
     {
@@ -30,7 +37,7 @@ var schema = new LabeledPropertyGraphSchema(GetNodeName)
     },
     ["Property"] = new NodeDef
     {
-        Properties = ["Name", ("Nullable", Primitive.Bool)],
+        Properties = ["Name", ("Nullable", PropertyType.Bool)],
         References = [("Type", ["ComplexType", "EnumType", "PrimitiveType"])],
     },
     ["NavigationProperty"] = new NodeDef
@@ -52,13 +59,13 @@ var schema = new LabeledPropertyGraphSchema(GetNodeName)
     // https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#_Toc38530405
     ["Annotation"] = new NodeDef
     {
-        Properties = [("Qualifier", Primitive.String)],
+        Properties = [("Qualifier", PropertyType.String)],
         References = [("Term", ["Term"])],
     },
 
     ["Term"] = new NodeDef
     {
-        Properties = [("Name", Primitive.String)],
+        Properties = [("Name", PropertyType.String), ("Nullable", PropertyType.Bool), ("DefaultValue", PropertyType.String), ("AppliesTo", PropertyType.String)],
         References = [("Type", ["ComplexType", "EnumType", "PrimitiveType"]), ("BaseTerm", ["Term"])],
         Contained = [("Elements", ["Annotation"])]
     },
@@ -68,15 +75,19 @@ Environment.CurrentDirectory = "D:/source/csdl-graph/csdl-graph/data"; // System
 
 File.WriteAllText("schema.lpg", schema.ToString());
 
-var graph = Graph.LoadGraph(schema, "example.xml", "edm.xml", "core.xml");
+var graph = Graph.LoadGraph(schema, GetNodeName, "example.xml", "edm.xml", "core.xml");
 
 graph.WriteTo("example.md");
 
 
-static string? GetNodeName(string Label, IReadOnlyDictionary<string, string> Properties) => Label switch
-{
-    "Schema" => Properties["Alias"] ?? Properties["Namespace"],
-    "PropertyRef" => Properties.Get("Alias") ?? Properties.Get("Name"),
-    _ => Properties.Get("Name"),
-};
 
+static string GetNodeName(string label, IReadOnlyDictionary<string, string> properties, IEnumerable<(string Label, Node Node)> adjacent)
+{
+    return label switch
+    {
+        "Schema" => properties.Get("Alias") ?? properties.Get("Namespace") ?? $"unnamed {label}",
+        "PropertyRef" => properties.Get("Alias") ?? properties.Get("Name") ?? $"unnamed {label}",
+        "Annotation" => adjacent?.FirstOrDefault(a => a.Label == "Term").Node?.Properties?.Get("Name") ?? $"unnamed {label}",
+        _ => properties.Get("Name") ?? $"unnamed {label}",
+    };
+}

@@ -2,5 +2,6 @@
 <Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Alias="Edm" Namespace="odata.org">
     <PrimitiveType Name="String" />
     <PrimitiveType Name="Int32" />
+    <PrimitiveType Name="Boolean" />
 
 </Schema>

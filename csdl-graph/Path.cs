@@ -11,7 +11,7 @@ public static class Path
         return segments;
     }
 
-  
+
     // [Theory]
     // [InlineData("/self.EntityContainer/MyEntitySet", new string[] { "", "self.EntityContainer", "MyEntitySet" })]
     // [InlineData("/org.example.Manager", new string[] { "", "org.example.Manager" })]
@@ -23,7 +23,7 @@ public static class Path
 
     // public void TestSplit(string path, string[] expected)
     // {
-    //     var actual = graf.Path.Split(path);
+    //     var actual = csdlGraph.Path.Split(path);
     //     Assert.Equal(actual, expected);
     // }
 }

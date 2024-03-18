@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Watch Remove="*.md" />
+    <Watch Include="data/**/*" />
   </ItemGroup>
 
   <ItemGroup>

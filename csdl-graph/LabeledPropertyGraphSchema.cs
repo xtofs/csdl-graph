@@ -1,16 +1,13 @@
 
-namespace graf;
+namespace csdlGraph;
 
 public class LabeledPropertyGraphSchema : IEnumerable
 {
     private readonly Dictionary<String, NodeDef> dictionary = [];
 
-    public LabeledPropertyGraphSchema(Func<string, IReadOnlyDictionary<string, string>, string?> getNodeName)
+    public LabeledPropertyGraphSchema()
     {
-        GetNodeName = getNodeName;
     }
-
-    public Func<string, IReadOnlyDictionary<string, string>, string?> GetNodeName { get; }
 
     public NodeDef this[string key]
     {
@@ -86,7 +83,6 @@ public readonly record struct NodeDef(
     Reference[] Contained
 )
 {
-
     public static implicit operator (Property[] Properties, Reference[] References, Reference[] Children)(NodeDef value)
     {
         return (value.Properties ?? [], value.References ?? [], value.Contained ?? []);
@@ -98,16 +94,16 @@ public readonly record struct NodeDef(
     }
 }
 
-public enum Primitive { String, Bool, Int }
+public enum PropertyType { String, Bool, Int }
 
-public static class PrimitiveExtensions
+public static class PropertyTypeExtensions
 {
-    public static string Name(this Primitive primitive) => primitive switch
+    public static string Name(this PropertyType type) => type switch
     {
-        Primitive.String => "string",
-        Primitive.Bool => "boolean",
-        Primitive.Int => "number",
-        _ => throw new InvalidDataException($"{primitive} is an unkonw Primitive value"),
+        PropertyType.String => "string",
+        PropertyType.Bool => "boolean",
+        PropertyType.Int => "number",
+        _ => throw new InvalidDataException($"{type} is an unkonw Primitive value"),
     };
 }
 
@@ -123,23 +119,22 @@ public record struct Reference(string Name, string[] Types)
         return new Reference(value.Name, value.Types);
     }
 
-
 }
 
-public record struct Property(string Name, Primitive Type)
+public record struct Property(string Name, PropertyType Type)
 {
-    public static implicit operator (string Name, Primitive Type)(Property value)
+    public static implicit operator (string Name, PropertyType Type)(Property value)
     {
         return (value.Name, value.Type);
     }
 
-    public static implicit operator Property((string Name, Primitive Type) value)
+    public static implicit operator Property((string Name, PropertyType Type) value)
     {
         return new Property(value.Name, value.Type);
     }
 
     public static implicit operator Property(string Name)
     {
-        return new Property(Name, Primitive.String);
+        return new Property(Name, PropertyType.String);
     }
 }
