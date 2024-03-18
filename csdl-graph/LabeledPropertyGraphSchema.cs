@@ -77,21 +77,17 @@ public class LabeledPropertyGraphSchema : IEnumerable
     }
 }
 
-public readonly record struct NodeDef(
-    Property[] Properties,
-    Reference[] References,
-    Reference[] Contained
-)
+public readonly record struct NodeDef(Property[] Properties, Reference[] References, Reference[] Contained)
 {
-    public static implicit operator (Property[] Properties, Reference[] References, Reference[] Children)(NodeDef value)
-    {
-        return (value.Properties ?? [], value.References ?? [], value.Contained ?? []);
-    }
+    // public static implicit operator (Property[] Properties, Reference[] References, Reference[] Children)(NodeDef value)
+    // {
+    //     return (value.Properties ?? [], value.References ?? [], value.Contained ?? []);
+    // }
 
-    public static implicit operator NodeDef((Property[] Properties, Reference[] References, Reference[] Children) value)
-    {
-        return new NodeDef(value.Properties, value.References, value.Children);
-    }
+    // public static implicit operator NodeDef((Property[] Properties, Reference[] References, Reference[] Children) value)
+    // {
+    //     return new NodeDef(value.Properties, value.References, value.Children);
+    // }
 }
 
 public enum PropertyType { String, Bool, Int }

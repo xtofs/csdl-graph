@@ -81,13 +81,20 @@ graph.WriteTo("example.md");
 
 
 
-static string GetNodeName(string label, IReadOnlyDictionary<string, string> properties, IEnumerable<(string Label, Node Node)> adjacent)
+static string GetNodeName(string label, IReadOnlyDictionary<string, string> properties)
 {
+    // Console.WriteLine("GetNodeName: {0} {1}", label, string.Join(", ", adjacent));
     return label switch
     {
-        "Schema" => properties.Get("Alias") ?? properties.Get("Namespace") ?? $"unnamed {label}",
-        "PropertyRef" => properties.Get("Alias") ?? properties.Get("Name") ?? $"unnamed {label}",
-        "Annotation" => adjacent?.FirstOrDefault(a => a.Label == "Term").Node?.Properties?.Get("Name") ?? $"unnamed {label}",
-        _ => properties.Get("Name") ?? $"unnamed {label}",
+        "Schema" =>
+            properties.Get("Alias") ?? properties.Get("Namespace") ?? $"unnamed {label}",
+        "PropertyRef" =>
+            properties.Get("Alias") ?? properties.Get("Name") ?? $"unnamed {label}",
+        "Annotation" =>
+            $"@{properties.Get("Term")}{PrefixIfNotNull("#", properties.Get("Qualifier"))}",
+        _ =>
+            properties.Get("Name") ?? $"unnamed {label}",
     };
+
+    static string PrefixIfNotNull(string prefix, string? text) => text == null ? "" : prefix + text;
 }

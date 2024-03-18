@@ -1,17 +1,19 @@
+
+using System.Data.Common;
+
 namespace csdlGraph;
 
-internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc GetNodeName)
+internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameFunc GetNodeName)
 {
-    public Graph Graph { get; private set; } = new(GetNodeName);
+    public Graph Graph { get; } = new();
 
-    public Dictionary<string, int> NameTable { get; private set; } = [];
+    public Dictionary<string, int> NameTable { get; } = [];
 
-    public List<(int Source, string Target, string Label)> Links = [];
+    public List<(int Source, string Target, string Label)> Links { get; } = [];
 
 
-    public void Load(string[] Names, XElement xml, string path, int? parentId = null, IImmutableList<string> qn = null!)
+    public void Load(string[] Names, XElement xml, string path, int parentId)
     {
-        qn ??= ImmutableList<string>.Empty;
         if (Names.Contains(xml.Name.LocalName))
         {
             var (properties, references, children) = Schema[xml.Name.LocalName];
@@ -24,9 +26,7 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc Ge
                          where v != null
                          select (p.Name, v.Value)).ToDictionary();
 
-
             var id = Graph.AddNode(xml.Name.LocalName, props);
-
 
             var refs =
                from r in references
@@ -35,12 +35,9 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc Ge
                select (r.Name, p.Value);
             foreach (var (Name, Value) in refs)
             {
+                props.Add(Name, Value);
                 Links.Add((Source: id, Target: Value, Label: Name));
             }
-
-            // add to name table after references are created
-            qn = qn.Add(Graph.NodeName(id));
-            NameTable.TryAdd(string.Join("/", qn), id);
 
             // verify
             var allowedAttrs = properties.Select(p => p.Name).Concat(references.Select(r => r.Name)).Prepend("xmlns");
@@ -56,10 +53,7 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc Ge
                 Console.WriteLine(@"unused xml element {0} of {1} {2}", unused.Name.LocalName, xml.Name.LocalName, li);
             }
 
-            if (parentId != null)
-            {
-                Graph.AddEdge(parentId.Value, id, "contains");
-            }
+            Graph.AddEdge(parentId, id, "contains");
 
             foreach (var (i, (Key, Types)) in children.WidthIndex())
             {
@@ -68,14 +62,37 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc Ge
                 {
                     foreach (var e in element.Elements())
                     {
-                        Load(Types, e, path, id, qn);
+                        Load(Types, e, path, id);
                     }
                 }
             }
         }
     }
 
-    public void Resolve()
+    internal void NameNodesAndUpdateNameTable(int id)
+    {
+        var node = this.Graph.nodes[id];
+        foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
+        {
+            NameNodesAndUpdateNameTable(child, []);
+        }
+    }
+
+    private void NameNodesAndUpdateNameTable(int id, ImmutableList<string> qn)
+    {
+        var node = this.Graph.nodes[id];
+        node.Name = GetNodeName(node.Label, node.Properties);
+
+        qn = qn.Add(node.Name);
+        NameTable.TryAdd(string.Join("/", qn), id);
+
+        foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
+        {
+            NameNodesAndUpdateNameTable(child, qn);
+        }
+    }
+
+    internal void ResolveNamedReferences()
     {
         foreach (var (source, target, label) in Links)
         {
@@ -89,6 +106,7 @@ internal record XmlCsdlLoader(LabeledPropertyGraphSchema Schema, NodeNameFunc Ge
             }
         }
     }
+
 }
 
 
