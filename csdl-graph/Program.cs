@@ -33,17 +33,19 @@ var schema = new LabeledPropertyGraphSchema
     {
         Properties = ["Name"],
         References = [("BaseType", ["ComplexType"])],
-        Contained = [("Properties", ["Property", "NavigationProperty"])]
+        Contained = [("Properties", ["Property", "NavigationProperty", "Annotation"])]
     },
     ["Property"] = new NodeDef
     {
         Properties = ["Name", ("Nullable", PropertyType.Bool)],
         References = [("Type", ["ComplexType", "EnumType", "PrimitiveType"])],
+        Contained = [("Annotations", ["Annotation"])],
     },
     ["NavigationProperty"] = new NodeDef
     {
         Properties = ["Name", "ContainsTarget"],
         References = [("Type", ["EntityType"])],
+        Contained = [("Annotations", ["Annotation"])],
     },
     ["PropertyRef"] = new NodeDef
     {
@@ -53,25 +55,23 @@ var schema = new LabeledPropertyGraphSchema
     ["PrimitiveType"] = new NodeDef
     {
         Properties = ["Name"],
+        Contained = [("Annotations", ["Annotation"])],
     },
-
-
+    ["Term"] = new NodeDef
+    {
+        Properties = [("Name", PropertyType.String), ("Nullable", PropertyType.Bool), ("DefaultValue", PropertyType.String), ("AppliesTo", PropertyType.String)],
+        References = [("Type", ["ComplexType", "EnumType", "PrimitiveType"]), ("BaseTerm", ["Term"])],
+        Contained = [("Annotations", ["Annotation"])],
+    },
     // https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#_Toc38530405
     ["Annotation"] = new NodeDef
     {
         Properties = [("Qualifier", PropertyType.String)],
         References = [("Term", ["Term"])],
     },
-
-    ["Term"] = new NodeDef
-    {
-        Properties = [("Name", PropertyType.String), ("Nullable", PropertyType.Bool), ("DefaultValue", PropertyType.String), ("AppliesTo", PropertyType.String)],
-        References = [("Type", ["ComplexType", "EnumType", "PrimitiveType"]), ("BaseTerm", ["Term"])],
-        Contained = [("Elements", ["Annotation"])]
-    },
 };
 
-Environment.CurrentDirectory = "D:/source/csdl-graph/csdl-graph/data"; // System.IO.Path.Combine(Environment.CurrentDirectory, "data");
+Environment.CurrentDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, "data");
 
 File.WriteAllText("schema.lpg", schema.ToString());
 
@@ -81,9 +81,9 @@ graph.WriteTo("example.md");
 
 
 
-static string GetNodeName(string label, IReadOnlyDictionary<string, string> properties)
+static string GetNodeName(Node node)
 {
-    // Console.WriteLine("GetNodeName: {0} {1}", label, string.Join(", ", adjacent));
+    var (label, properties, _) = node;
     return label switch
     {
         "Schema" =>

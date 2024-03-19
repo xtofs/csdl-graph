@@ -1,9 +1,7 @@
 
-using System.Data.Common;
-
 namespace csdlGraph;
 
-internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameFunc GetNodeName)
+internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, Func<Node, string> GetNodeName)
 {
     public Graph Graph { get; } = new();
 
@@ -12,7 +10,7 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameF
     public List<(int Source, string Target, string Label)> Links { get; } = [];
 
 
-    public void Load(string[] Names, XElement xml, string path, int parentId)
+    public void Load(string[] Names, XElement xml, string filePath, int parentId, string? gpath)
     {
         if (Names.Contains(xml.Name.LocalName))
         {
@@ -21,13 +19,24 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameF
             children ??= [];
             properties ??= [];
 
-            var props = (from p in properties
+            var props = (from p in properties.Concat(references.Select(r => new Property(r.Name, (PropertyType)Int32.MaxValue)))
                          let v = xml.Attribute(p.Name)
                          where v != null
                          select (p.Name, v.Value)).ToDictionary();
 
             var id = Graph.AddNode(xml.Name.LocalName, props);
+            Graph.AddEdge(parentId, id, "contains");
 
+            // set name
+            var node = Graph.nodes[id];
+            node.Name = GetNodeName(node);
+
+            // add qualified name (gpath) to name table
+            // qn = qn.Add(node.Name);
+            gpath = gpath is null ? node.Name : gpath + GetSeparator(node) + node.Name;
+            NameTable.TryAdd(gpath, id);
+
+            // add links for references (to the Links fixup table)
             var refs =
                from r in references
                let p = xml.Attribute(r.Name)
@@ -35,26 +44,24 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameF
                select (r.Name, p.Value);
             foreach (var (Name, Value) in refs)
             {
-                props.Add(Name, Value);
                 Links.Add((Source: id, Target: Value, Label: Name));
             }
 
-            // verify
+            // log unprocessed XML attributes
             var allowedAttrs = properties.Select(p => p.Name).Concat(references.Select(r => r.Name)).Prepend("xmlns");
             foreach (var unused in xml.Attributes().Where(a => !allowedAttrs.Contains(a.Name.LocalName)))
             {
-                var li = new LineInfo(path, unused);
-                System.Console.WriteLine(@"unused xml attribute {0} of {1} {2}", unused.Name.LocalName, xml.Name.LocalName, li);
+                var li = new LineInfo(filePath, unused);
+                System.Console.WriteLine(@"unused xml attribute {0} of xml element {1} {2}", unused.Name.LocalName, xml.Name.LocalName, li);
             }
             var allowed = (children.Select(c => c.Types).FirstOrDefault() ?? []).Concat((children ?? []).Skip(1).Select(c => c.Name));
             foreach (var unused in xml.Elements().Where(e => !allowed.Contains(e.Name.LocalName)))
             {
-                var li = new LineInfo(path, unused);
+                var li = new LineInfo(filePath, unused);
                 Console.WriteLine(@"unused xml element {0} of {1} {2}", unused.Name.LocalName, xml.Name.LocalName, li);
             }
 
-            Graph.AddEdge(parentId, id, "contains");
-
+            // recurse
             foreach (var (i, (Key, Types)) in children.WidthIndex())
             {
                 var element = i == 0 ? xml : xml.Element(Key);
@@ -62,37 +69,50 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameF
                 {
                     foreach (var e in element.Elements())
                     {
-                        Load(Types, e, path, id);
+                        Load(Types, e, filePath, id, gpath);
                     }
                 }
             }
         }
     }
 
-    internal void NameNodesAndUpdateNameTable(int id)
+    private static string GetSeparator(Node node)
     {
-        var node = this.Graph.nodes[id];
-        foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
+        return node.Label switch
         {
-            NameNodesAndUpdateNameTable(child, []);
-        }
+            "Term" => ".",
+            "EntityType" => ".",
+            "ComplexType" => ".",
+            "PrimitiveType" => ".",
+            "TypeDefinition" => ".",
+            _ => "/"
+        };
     }
 
-    private void NameNodesAndUpdateNameTable(int id, ImmutableList<string> qn)
-    {
-        var node = this.Graph.nodes[id];
-        node.Name = GetNodeName(node.Label, node.Properties);
+    // internal void NameNodesAndUpdateNameTable(int id)
+    // {
+    //     var node = this.Graph.nodes[id];
+    //     foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
+    //     {
+    //         NameNodesAndUpdateNameTable(child, []);
+    //     }
+    // }
 
-        qn = qn.Add(node.Name);
-        NameTable.TryAdd(string.Join("/", qn), id);
+    // private void NameNodesAndUpdateNameTable(int id, ImmutableList<string> qn)
+    // {
+    //     var node = this.Graph.nodes[id];
+    //     node.Name = GetNodeName(node.Label, node.Properties);
 
-        foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
-        {
-            NameNodesAndUpdateNameTable(child, qn);
-        }
-    }
+    //     qn = qn.Add(node.Name);
+    //     NameTable.TryAdd(string.Join("/", qn), id);
 
-    internal void ResolveNamedReferences()
+    //     foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
+    //     {
+    //         NameNodesAndUpdateNameTable(child, qn);
+    //     }
+    // }
+
+    internal void ResolveReferences()
     {
         foreach (var (source, target, label) in Links)
         {
@@ -102,6 +122,7 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema, NodeNameF
             }
             else
             {
+                // var li = Graph.nodes[source].LineInfo;
                 Console.WriteLine($"can't resolve {target}");
             }
         }

@@ -115,6 +115,10 @@ public record struct Reference(string Name, string[] Types)
         return new Reference(value.Name, value.Types);
     }
 
+    public static implicit operator Reference(string[] value)
+    {
+        return new Reference("@default", value);
+    }
 }
 
 public record struct Property(string Name, PropertyType Type)

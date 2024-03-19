@@ -68,7 +68,7 @@ public sealed class Graph()
         w.WriteLine("```");
     }
 
-    public static Graph LoadGraph(LabeledPropertyGraphSchema schema, NodeNameFunc getNodeName, params string[] paths)
+    public static Graph LoadGraph(LabeledPropertyGraphSchema schema, Func<Node, string> getNodeName, params string[] paths)
     {
         var builder = new XmlCsdlGraphBuilder(schema, getNodeName);
 
@@ -78,21 +78,17 @@ public sealed class Graph()
         var xmls = paths.Select(path => (System.IO.Path.Combine(Environment.CurrentDirectory, path), XElement.Load(path, LoadOptions.SetLineInfo)));
         foreach (var (path, xml) in xmls)
         {
-            builder.Load(["Schema"], xml, path, root);
+            builder.Load(["Schema"], xml, path, root, null);
         }
-
-        // stage 2 name nodes 
-        builder.NameNodesAndUpdateNameTable(root);
-
-        // stage 3 reslove the named references
-        builder.ResolveNamedReferences();
+        // stage 3 resolve the references 
+        builder.ResolveReferences();
 
         return builder.Graph;
     }
 }
 
+public delegate string NodeNameFunc(Node node); // string label, IReadOnlyDictionary<string, string> properties);
 
-public delegate string NodeNameFunc(string label, IReadOnlyDictionary<string, string> properties);
 
 public record Node(string Label, IReadOnlyDictionary<string, string> Properties, List<(string Label, int Target)> Adjacent)
 {
