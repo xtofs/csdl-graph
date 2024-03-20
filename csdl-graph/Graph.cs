@@ -83,6 +83,10 @@ public sealed class Graph()
         // stage 3 resolve the references 
         builder.ResolveReferences();
 
+        Console.WriteLine();
+        Console.WriteLine("# Names");
+        Console.WriteLine();
+        Console.WriteLine(string.Join(Environment.NewLine, builder.NameTable.Keys));
         return builder.Graph;
     }
 }

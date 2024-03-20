@@ -20,8 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Watch Remove="*.md" />
-    <Watch Include="data/**/*" />
+    <Watch Include="data/**/*.xml" />
+    <Watch Remove="**/*.md" />
+    <Watch Remove="**/*.lpg" />
   </ItemGroup>
 
   <ItemGroup>
