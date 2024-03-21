@@ -1,4 +1,4 @@
-namespace graf;
+namespace Csdl.Graph;
 
 public static class ModelPath
 {
@@ -24,13 +24,4 @@ public static class ModelPath
         }
     }
 
-}
-
-static class StringExtensions
-{
-    public static string[] SplitAtLast(this string field, char separator)
-    {
-        var ix = field.LastIndexOf(separator);
-        return ix > 0 ? [field[..ix], field[(ix + 1)..]] : [field];
-    }
 }

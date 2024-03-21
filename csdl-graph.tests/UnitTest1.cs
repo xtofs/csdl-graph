@@ -1,5 +1,4 @@
-namespace graf.tests;
-
+namespace Csdl.Graph.Tests;
 
 public class UnitTest1
 {
@@ -20,7 +19,7 @@ public class UnitTest1
 
     public void TestSplit(string path, string[] expected)
     {
-        var actual = graf.ModelPath.Split(path);
+        var actual = Csdl.Graph.ModelPath.Split(path);
         Assert.Equal(expected, actual);
     }
 }
