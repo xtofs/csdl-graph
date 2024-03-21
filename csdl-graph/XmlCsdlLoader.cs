@@ -1,7 +1,7 @@
 
 using System.Security.Cryptography;
 
-namespace csdlGraph;
+namespace Csdl.Graph;
 
 internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
 {
@@ -134,7 +134,6 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
             }
         }
     }
-
 
 
     static string GetNodeName(Node node)

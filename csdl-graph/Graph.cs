@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace csdlGraph;
+namespace Csdl.Graph;
 
 public sealed class Graph()
 {
@@ -91,7 +91,7 @@ public sealed class Graph()
     }
 }
 
-public delegate string NodeNameFunc(Node node); // string label, IReadOnlyDictionary<string, string> properties);
+// public delegate string NodeNameFunc(Node node); // string label, IReadOnlyDictionary<string, string> properties);
 
 
 public record Node(string Label, IReadOnlyDictionary<string, string> Properties, List<(string Label, int Target)> Adjacent)

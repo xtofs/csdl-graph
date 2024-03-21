@@ -1,4 +1,4 @@
-﻿using csdlGraph;
+﻿using Csdl.Graph;
 
 var schema = new LabeledPropertyGraphSchema
 {

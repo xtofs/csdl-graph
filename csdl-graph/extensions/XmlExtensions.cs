@@ -1,5 +1,5 @@
 using System.Xml.Linq;
-namespace csdlGraph;
+namespace Csdl.Graph;
 
 static class XmlExtensions
 {

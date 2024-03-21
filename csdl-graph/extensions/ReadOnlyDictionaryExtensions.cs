@@ -1,4 +1,4 @@
-namespace csdlGraph
+namespace Csdl.Graph
 {
     public static class ReadOnlyDictionaryExtensions
     {

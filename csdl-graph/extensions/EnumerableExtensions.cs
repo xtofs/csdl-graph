@@ -1,4 +1,4 @@
-namespace csdlGraph;
+namespace Csdl.Graph;
 
 public delegate bool Try<S, T>(S source, [MaybeNullWhen(false)] out T result);
 
