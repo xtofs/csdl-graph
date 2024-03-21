@@ -18,7 +18,7 @@ Each CSDL Model Element is a Node in the graph with a label and
 - a set of [contained](https://www.softwareideas.net/uml-class-diagram#containment) Model elements, each with a Label of a small set of alternatives
 - a set of non-contained, associated ModelElements, each with a Label of a small set of alternatives.
 
-In addition to the schema, it is neccesarry how to specify how model paths are formed and how the indicidual elements are named in the path. This is done via functions XmlCsdlLoader.GetSeparator and XmlCsdlLoader.GetName
+In addition to the schema, it is necessary to specify how model paths are formed and how the individual elements are named in the path. This is done via functions XmlCsdlLoader.GetSeparator and XmlCsdlLoader.GetName
 
 # Appendix
 
