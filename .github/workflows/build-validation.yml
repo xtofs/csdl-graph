@@ -1,3 +1,5 @@
+name: build validation
+
 on:
   push:
   pull_request:
