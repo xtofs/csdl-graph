@@ -68,9 +68,9 @@ public sealed class Graph()
         w.WriteLine("```");
     }
 
-    public static Graph LoadGraph(LabeledPropertyGraphSchema schema, Func<Node, string> getNodeName, params string[] paths)
+    public static Graph LoadGraph(LabeledPropertyGraphSchema schema, params string[] paths)
     {
-        var builder = new XmlCsdlGraphBuilder(schema, getNodeName);
+        var builder = new XmlCsdlGraphBuilder(schema);
 
         var root = builder.Graph.AddNode("$ROOT", new Dictionary<string, string>());
 

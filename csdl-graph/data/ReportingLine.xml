@@ -13,7 +13,9 @@
             <PropertyRef Name="ReportsTo/Name" Alias="Manager" />
             <PropertyRef Name="DirectReport/Name" Alias="Subordinate" />
         </Key>
-        <NavigationProperty Name="ReportsTo" Type="self.Employee" />
+        <NavigationProperty Name="ReportsTo" Type="self.Employee">
+            <Annotation Term="Core.Description" String="The &quot;manager&quot; " />
+        </NavigationProperty>
         <NavigationProperty Name="DirectReport" Type="self.Employee" />
     </EntityType>
 </Schema>

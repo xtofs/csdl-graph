@@ -12,7 +12,7 @@ class TypeDefinition {
     Name: string;
 
     // references (associations) to other nodes
-    UnderlyingType: Box<PrimitiveType>;
+    UnderlyingType: Reference<PrimitiveType>;
 
     // child (contained) nodes
     Elements: Collection<Annotation>;
@@ -37,7 +37,7 @@ class EntityType {
     Name: string;
 
     // references (associations) to other nodes
-    BaseType: Box<EntityType>;
+    BaseType: Reference<EntityType>;
 
     // child (contained) nodes
     Properties: Collection<Property|NavigationProperty|Annotation>;
@@ -49,7 +49,7 @@ class ComplexType {
     Name: string;
 
     // references (associations) to other nodes
-    BaseType: Box<ComplexType>;
+    BaseType: Reference<ComplexType>;
 
     // child (contained) nodes
     Properties: Collection<Property|NavigationProperty|Annotation>;
@@ -61,7 +61,7 @@ class Property {
     Nullable: boolean;
 
     // references (associations) to other nodes
-    Type: Box<ComplexType|EnumType|PrimitiveType>;
+    Type: Reference<ComplexType|EnumType|PrimitiveType>;
 
     // child (contained) nodes
     Annotations: Collection<Annotation>;
@@ -73,7 +73,7 @@ class NavigationProperty {
     ContainsTarget: string;
 
     // references (associations) to other nodes
-    Type: Box<EntityType>;
+    Type: Reference<EntityType>;
 
     // child (contained) nodes
     Annotations: Collection<Annotation>;
@@ -84,7 +84,10 @@ class PropertyRef {
     Alias: string;
 
     // references (associations) to other nodes
-    Name: Box<Property>;
+    Name: PathReference<NavigationProperty,Property>;
+}
+
+class NavigationPropertyBinding {
 }
 
 class PrimitiveType {
@@ -103,8 +106,8 @@ class Term {
     AppliesTo: string;
 
     // references (associations) to other nodes
-    Type: Box<ComplexType|EnumType|PrimitiveType>;
-    BaseTerm: Box<Term>;
+    Type: Reference<ComplexType|EnumType|PrimitiveType>;
+    BaseTerm: Reference<Term>;
 
     // child (contained) nodes
     Annotations: Collection<Annotation>;
@@ -115,19 +118,6 @@ class Annotation {
     Qualifier: string;
 
     // references (associations) to other nodes
-    Term: Box<Term>;
+    Term: Reference<Term>;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-type Box<T> = any
-type Collection<T> = any
