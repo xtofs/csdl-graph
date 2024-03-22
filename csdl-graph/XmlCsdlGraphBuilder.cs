@@ -98,12 +98,12 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
             if (attr == null)
             {
                 var li = new LineInfo(filePath, xml);
-                Console.WriteLine($"XML element {xml.Name.LocalName} at {li} is missing property {p.Name}");
+                Console.WriteLine($"missing XML attribute {p.Name} of XML element {xml.Name.LocalName} at {li} ");
             }
             else if (!p.Type.IsValid(attr.Value))
             {
-                var li = new LineInfo(filePath, xml);
-                Console.WriteLine($"XML element {xml.Name.LocalName} at {li} property {p.Name} has wrong value, expecting {p.Type}");
+                var li = new LineInfo(filePath, attr);
+                Console.WriteLine($"invalid XML attribute value for attribute {p.Name} of XML element {xml.Name.LocalName} at {li} property {p.Name} expecting {p.Type}");
             }
         }
 
