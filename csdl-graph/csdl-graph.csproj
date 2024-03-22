@@ -25,9 +25,12 @@
     <Watch Remove="**/*.lpg" />
   </ItemGroup>
 
+
+  <Target Name="PreBuild" BeforeTargets="Build">
+    <Exec Command="cls" />
+  </Target>
+
   <ItemGroup>
-    <!-- <None Update="example.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None> -->
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
 </Project>

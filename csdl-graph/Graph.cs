@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.VisualBasic;
 
 namespace Csdl.Graph;
 
@@ -53,15 +54,15 @@ public sealed class Graph()
         }
         foreach (var (i, node) in nodes.WidthIndex())
         {
-            foreach (var edge in node.Adjacent)
+            foreach (var (Label, Target) in node.Adjacent)
             {
-                if (edge.Label == "contains")
+                if (Label == "$contains")
                 {
-                    w.WriteLine("n{0}-->n{1}", i, edge.Target);
+                    w.WriteLine("n{0}-->n{1}", i, Target);
                 }
                 else
                 {
-                    w.WriteLine("n{0}-. {1} .-> n{2}", i, edge.Label, edge.Target);
+                    w.WriteLine("n{0}-. {1} .-> n{2}", i, Label, Target);
                 }
             }
         }
@@ -70,28 +71,11 @@ public sealed class Graph()
 
     public static Graph LoadGraph(LabeledPropertyGraphSchema schema, params string[] paths)
     {
-        var builder = new XmlCsdlGraphBuilder(schema);
-
-        var root = builder.Graph.AddNode("$ROOT", new Dictionary<string, string>());
-
-        // stage 1 constring "containment" graph"
         var xmls = paths.Select(path => (System.IO.Path.Combine(Environment.CurrentDirectory, path), XElement.Load(path, LoadOptions.SetLineInfo)));
-        foreach (var (path, xml) in xmls)
-        {
-            builder.Load(["Schema"], xml, path, root, null);
-        }
-        // stage 3 resolve the references 
-        builder.ResolveReferences();
 
-        Console.WriteLine();
-        Console.WriteLine("# Names");
-        Console.WriteLine();
-        Console.WriteLine(string.Join(Environment.NewLine, builder.NameTable.Keys));
-        return builder.Graph;
+        return XmlCsdlGraphBuilder.FromXml(schema, xmls);
     }
 }
-
-// public delegate string NodeNameFunc(Node node); // string label, IReadOnlyDictionary<string, string> properties);
 
 
 public record Node(string Label, IReadOnlyDictionary<string, string> Properties, List<(string Label, int Target)> Adjacent)

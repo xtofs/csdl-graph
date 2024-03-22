@@ -1,10 +1,32 @@
 
-using System.Security.Cryptography;
 
 namespace Csdl.Graph;
 
 internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
 {
+
+    public static Graph FromXml(LabeledPropertyGraphSchema schema, IEnumerable<(string Path, XElement Xml)> xmls)
+    {
+        var builder = new XmlCsdlGraphBuilder(schema);
+
+        var root = builder.Graph.AddNode("$ROOT", new Dictionary<string, string>());
+
+        // stage 1 constructing "containment" graph
+        // var xmls = paths.Select(path => (System.IO.Path.Combine(Environment.CurrentDirectory, path), XElement.Load(path, LoadOptions.SetLineInfo)));
+        foreach (var (path, xml) in xmls)
+        {
+            builder.Load(["Schema"], xml, path, root, null);
+        }
+        // stage 3 resolve the references 
+        builder.ResolveReferences();
+
+        Console.WriteLine();
+        Console.WriteLine("# Names");
+        Console.WriteLine();
+        Console.WriteLine(string.Join(Environment.NewLine, builder.NameTable.Keys));
+        return builder.Graph;
+    }
+
     public Graph Graph { get; } = new();
 
     public Dictionary<string, int> NameTable { get; } = [];
@@ -18,15 +40,17 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
         {
             var (properties, references, children) = Schema[xml.Name.LocalName];
 
+            IEnumerable<Property> enumerable = properties.Concat(references.Select(r => new Property(r.Name, PropertyType.Path)));
             var props = (
-                from p in properties.Concat(references.Select(r => new Property(r.Name, PropertyType.Path)))
+                from p in enumerable
                 let v = xml.Attribute(p.Name)
                 where v != null
                 select (p.Name, v.Value)
             ).ToDictionary();
 
             var id = Graph.AddNode(xml.Name.LocalName, props);
-            Graph.AddEdge(parentId, id, "contains");
+            Graph.AddEdge(parentId, id, "$contains");
+            Graph.AddEdge(id, parentId, "$contained");
 
             // set name
             var node = Graph.nodes[id];
@@ -37,7 +61,7 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
             gpath = gpath is null ? node.Name : gpath + GetSeparator(parentLabel, node.Label) + node.Name;
             NameTable.TryAdd(gpath, id);
 
-            // add links for references (to the Links fixup table)
+            // add links for references (add to the Links fixup table for later)
             var refs =
                from r in references
                let p = xml.Attribute(r.Name)
@@ -96,28 +120,6 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
         };
     }
 
-    // internal void NameNodesAndUpdateNameTable(int id)
-    // {
-    //     var node = this.Graph.nodes[id];
-    //     foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
-    //     {
-    //         NameNodesAndUpdateNameTable(child, []);
-    //     }
-    // }
-
-    // private void NameNodesAndUpdateNameTable(int id, ImmutableList<string> qn)
-    // {
-    //     var node = this.Graph.nodes[id];
-    //     node.Name = GetNodeName(node.Label, node.Properties);
-
-    //     qn = qn.Add(node.Name);
-    //     NameTable.TryAdd(string.Join("/", qn), id);
-
-    //     foreach (var (_, child) in node.Adjacent.Where(a => a.Label == "contains"))
-    //     {
-    //         NameNodesAndUpdateNameTable(child, qn);
-    //     }
-    // }
 
     internal void ResolveReferences()
     {
@@ -134,7 +136,6 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
             }
         }
     }
-
 
     static string GetNodeName(Node node)
     {
