@@ -25,11 +25,6 @@
     <Watch Remove="**/*.lpg" />
   </ItemGroup>
 
-
-  <Target Name="PreBuild" BeforeTargets="Build">
-    <Exec Command="cls" />
-  </Target>
-
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
