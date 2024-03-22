@@ -10,6 +10,14 @@ public sealed class Graph()
         return nodes.Count - 1;
     }
 
+    internal int AddChildNode(int parentId, string Label, IReadOnlyDictionary<string, string> properties)
+    {
+        var id = this.AddNode(Label, properties);
+        this.AddEdge(parentId, id, "$contains");
+        this.AddEdge(id, parentId, "$contained");
+        return id;
+    }
+
     public void AddEdge(int source, int target, string label)
     {
         // Debug.Assert(nodes.Count < target); // ensure target exists

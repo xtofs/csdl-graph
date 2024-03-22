@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "csdl-graph", "csdl-graph\cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "csdl-graph.tests", "csdl-graph.tests\csdl-graph.tests.csproj", "{7D805641-C5EC-4436-9790-F05073520EF5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xml", "xml\xml.csproj", "{60A9C852-DC98-46C7-966F-1BECF5193C04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7D805641-C5EC-4436-9790-F05073520EF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D805641-C5EC-4436-9790-F05073520EF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D805641-C5EC-4436-9790-F05073520EF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60A9C852-DC98-46C7-966F-1BECF5193C04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60A9C852-DC98-46C7-966F-1BECF5193C04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60A9C852-DC98-46C7-966F-1BECF5193C04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60A9C852-DC98-46C7-966F-1BECF5193C04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

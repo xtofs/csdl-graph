@@ -6,12 +6,18 @@ namespace Csdl.Graph;
 
 internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
 {
+    private readonly Graph _graph = new();
+
+    private readonly Dictionary<string, int> _nameTable = [];
+
+    private readonly List<(int Source, string Target, string Label)> _links = [];
 
     public static Graph FromXml(LabeledPropertyGraphSchema schema, IEnumerable<(string Path, XElement Xml)> xmls)
     {
         var builder = new XmlCsdlGraphBuilder(schema);
 
-        var root = builder.Graph.AddNode("$ROOT", new Dictionary<string, string>());
+        var root = builder._graph.AddNode("$ROOT", new Dictionary<string, string>());
+        builder.AddEdmSchema(root);
 
         // stage 1 constructing "containment" graph
         // var xmls = paths.Select(path => (System.IO.Path.Combine(Environment.CurrentDirectory, path), XElement.Load(path, LoadOptions.SetLineInfo)));
@@ -19,21 +25,28 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
         {
             builder.Load(["Schema"], xml, path, root, null);
         }
+
         // stage 3 resolve the references 
         builder.ResolveReferences();
 
         Console.WriteLine();
         Console.WriteLine("# Names");
         Console.WriteLine();
-        Console.WriteLine(string.Join(Environment.NewLine, builder.NameTable.Keys));
-        return builder.Graph;
+        Console.WriteLine(string.Join(Environment.NewLine, builder._nameTable.Keys));
+        return builder._graph;
     }
 
-    public Graph Graph { get; } = new();
+    private void AddEdmSchema(int root)
+    {
+        var edm = _graph.AddNode("Schema", new Dictionary<string, string> { ["Namespace"] = "odata.edm", ["Alias"] = "Edm" });
 
-    public Dictionary<string, int> NameTable { get; } = [];
 
-    public List<(int Source, string Target, string Label)> Links { get; } = [];
+        var edmSchema = _graph.AddChildNode(root, "Schema", new Dictionary<string, string> { ["Namespace"] = "odata.edm", ["Alias"] = "Edm" });
+
+        var stringType = _graph.AddChildNode(edmSchema, "PrimitiveType", new Dictionary<string, string> { ["Name"] = "String" });
+        var int32Type = _graph.AddChildNode(edmSchema, "PrimitiveType", new Dictionary<string, string> { ["Name"] = "Int32" });
+        var boolType = _graph.AddChildNode(edmSchema, "PrimitiveType", new Dictionary<string, string> { ["Name"] = "Boolean" });
+    }
 
     public void Load(string[] Names, XElement xml, string filePath, int parentId, string? gpath)
     {
@@ -52,18 +65,16 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
             select (p.Type == PropertyType.Path ? $"${p.Name}" : p.Name, v.Value)
         ).ToDictionary();
 
-        var id = Graph.AddNode(xml.Name.LocalName, props);
-        Graph.AddEdge(parentId, id, "$contains");
-        Graph.AddEdge(id, parentId, "$contained");
+        var id = _graph.AddChildNode(parentId, xml.Name.LocalName, props);
 
         // set name
-        var node = Graph.nodes[id];
+        var node = _graph.nodes[id];
         node.Name = GetNodeName(node);
 
-        // add qualified name (gpath) to name table            
-        var parentLabel = Graph.nodes[parentId].Label;
+        // add fully qualified model path to name table            
+        var parentLabel = _graph.nodes[parentId].Label;
         gpath = gpath is null ? node.Name : gpath + GetPathSeparator(parentLabel, node.Label) + node.Name;
-        NameTable.TryAdd(gpath, id);
+        _nameTable.TryAdd(gpath, id);
 
         // add links for references (add to the `Links` fixup table for later)
         var refs =
@@ -73,7 +84,7 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
            select (r.Name, p.Value);
         foreach (var (Name, Value) in refs)
         {
-            Links.Add((Source: id, Target: Value, Label: Name));
+            _links.Add((Source: id, Target: Value, Label: Name));
         }
 
         // log unprocessed XML attributes
@@ -124,11 +135,11 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
 
     internal void ResolveReferences()
     {
-        foreach (var (source, target, label) in Links)
+        foreach (var (source, target, label) in _links)
         {
-            if (NameTable.TryGetValue(target, out var tgt))
+            if (_nameTable.TryGetValue(target, out var tgt))
             {
-                Graph.AddEdge(source, tgt, label);
+                _graph.AddEdge(source, tgt, label);
             }
             else
             {

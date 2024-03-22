@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://docs.oasis-open.org/odata/ns/edmx https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/os/schemas/edmx.xsd
+                        http://docs.oasis-open.org/odata/ns/edm https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/os/schemas/edm.xsd"
+    Version="4.0"
+    xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx"
+    xmlns="http://docs.oasis-open.org/odata/ns/edm">
+    <edmx:Reference
+        Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+        <edmx:Include Namespace="Org.OData.Core.V1" Alias="Core">
+            <Annotation Term="Core.DefaultNamespace" />
+        </edmx:Include>
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Measures.V1.xml">
+        <edmx:Include Alias="Measures" Namespace="Org.OData.Measures.V1" />
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="ODataDemo">
+            <EnumType Name="foo">
+                <Member Name="red" />
+                <Member Name="green" />
+            </EnumType>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>
