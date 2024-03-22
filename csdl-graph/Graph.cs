@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using Microsoft.VisualBasic;
-
 namespace Csdl.Graph;
 
 public sealed class Graph()
@@ -18,13 +15,6 @@ public sealed class Graph()
         // Debug.Assert(nodes.Count < target); // ensure target exists
         nodes[source].Adjacent.Add((label, target));
     }
-
-    // public string NodeName(int id) => NodeName(nodes[id]);
-
-    // public string NodeName(Node node)
-    // {
-    //     return node.Name ??= CreateNodeName(node.Label, node.Properties, node.Adjacent.Select(a => (a.Label, nodes[a.Target])));
-    // }
 
     public override string ToString()
     {
@@ -76,7 +66,6 @@ public sealed class Graph()
         return XmlCsdlGraphBuilder.FromXml(schema, xmls);
     }
 }
-
 
 public record Node(string Label, IReadOnlyDictionary<string, string> Properties, List<(string Label, int Target)> Adjacent)
 {

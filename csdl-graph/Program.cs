@@ -16,6 +16,8 @@ internal class Program
 
     private static void Run(string inputFile, string outputFile)
     {
+        Console.Clear();
+
         var iDir = Path.GetDirectoryName(inputFile)!;
         var oDir = Path.GetDirectoryName(outputFile)!;
         File.WriteAllText(Path.Combine(oDir, "schema.lpg"), SCHEMA.ToString());
@@ -70,7 +72,7 @@ internal class Program
         },
         ["NavigationProperty"] = new NodeDef
         {
-            Properties = ["Name", "ContainsTarget"],
+            Properties = ["Name", ("ContainsTarget", PropertyType.Bool)],
             Associations = [new Reference("Type", ["EntityType"])],
             Elements = [("Annotations", ["Annotation"])],
         },

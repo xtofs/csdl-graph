@@ -3,18 +3,14 @@
   <EntityType Name="Product">
     <Property Name="id" Type="Edm.String" />
     <NavigationProperty Name="category" Type="sales.Category" ContainsTarget="false">
-      <Annotation Term="Core.Description" String="the catogory of the product" />
+      <Annotation Term="Core.Description" String="the catogory of a product" />
     </NavigationProperty>
-    <Property Name="category2" Type="sales.Category2"></Property>
   </EntityType>
+
   <EntityType Name="Category">
     <Property Name="id" Type="Edm.String" />
     <Property Name="name" Type="Edm.String" />
     <Annotation Term="Core.Description" String="a product catogory" />
   </EntityType>
 
-  <ComplexType Name="Category2">
-    <Property Name="id" Type="Edm.String" />
-    <Property Name="name" Type="Edm.String" />
-  </ComplexType>
 </Schema>
