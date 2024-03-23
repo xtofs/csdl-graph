@@ -44,15 +44,14 @@ public sealed class Graph()
         w.WriteLine();
         w.WriteLine("```mermaid");
         w.WriteLine("graph");
-        foreach (var (i, node) in nodes.WidthIndex())
+        foreach (var (i, node) in nodes.WidthIndex().Where(n => n.Item.Label != "$ROOT"))
         {
-            var name = node.Name;
-            // name = name == null ? $"{node.Label}" : $"{name}: {node.Label}";
-            w.WriteLine("n{0}[{1}]", i, $"{name}: {node.Label}");
+            var name = node.Name == null ? $"{node.Label}" : $"{node.Name}: {node.Label}";
+            w.WriteLine("n{0}[{1}]", i, name);
         }
-        foreach (var (i, node) in nodes.WidthIndex())
+        foreach (var (i, node) in nodes.WidthIndex().Where(n => n.Item.Label != "$ROOT"))
         {
-            foreach (var (Label, Target) in node.Adjacent)
+            foreach (var (Label, Target) in node.Adjacent.Where(lnk => lnk.Label != "$contained"))
             {
                 if (Label == "$contains")
                 {

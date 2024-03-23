@@ -2,69 +2,106 @@
 
 ```mermaid
 graph
-n0[: $ROOT]
-n1[sales: Schema]
-n2[Product: EntityType]
-n3[id: Property]
-n4[category: NavigationProperty]
-n5[@Core.Description: Annotation]
-n6[Category: EntityType]
-n7[id: Property]
-n8[name: Property]
-n9[@Core.Description: Annotation]
-n10[Edm: Schema]
-n11[String: PrimitiveType]
-n12[Int32: PrimitiveType]
-n13[Boolean: PrimitiveType]
-n14[Core: Schema]
-n15[Description: Term]
-n16[IsLanguageDependent: Term]
-n17[Tag: TypeDefinition]
-n18[RequiresType: Term]
-n0-->n1
-n0-->n10
-n0-->n14
-n1-. $contained .-> n0
+n1[Edm: Schema]
+n2[AnnotationPath: PrimitiveType]
+n3[AnyPropertyPath: PrimitiveType]
+n4[Binary: PrimitiveType]
+n5[Boolean: PrimitiveType]
+n6[Byte: PrimitiveType]
+n7[ComplexType: PrimitiveType]
+n8[Date: PrimitiveType]
+n9[DateTimeOffset: PrimitiveType]
+n10[Decimal: PrimitiveType]
+n11[Double: PrimitiveType]
+n12[Duration: PrimitiveType]
+n13[EntityType: PrimitiveType]
+n14[Geography: PrimitiveType]
+n15[GeographyCollection: PrimitiveType]
+n16[GeographyLineString: PrimitiveType]
+n17[GeographyMultiLineString: PrimitiveType]
+n18[GeographyMultiPoint: PrimitiveType]
+n19[GeographyMultiPolygon: PrimitiveType]
+n20[GeographyPoint: PrimitiveType]
+n21[GeographyPolygon: PrimitiveType]
+n22[Geometry: PrimitiveType]
+n23[GeometryCollection: PrimitiveType]
+n24[GeometryLineString: PrimitiveType]
+n25[GeometryMultiLineString: PrimitiveType]
+n26[GeometryMultiPoint: PrimitiveType]
+n27[GeometryMultiPolygon: PrimitiveType]
+n28[GeometryPoint: PrimitiveType]
+n29[GeometryPolygon: PrimitiveType]
+n30[Guid: PrimitiveType]
+n31[Int: PrimitiveType]
+n32[ModelElementPath: PrimitiveType]
+n33[NavigationPropertyPath: PrimitiveType]
+n34[PrimitiveType: PrimitiveType]
+n35[PropertyPath: PrimitiveType]
+n36[SByte: PrimitiveType]
+n37[Single: PrimitiveType]
+n38[Stream: PrimitiveType]
+n39[String: PrimitiveType]
+n40[TimeOfDay: PrimitiveType]
+n41[Untyped: PrimitiveType]
+n42[sales: Schema]
+n43[Product: EntityType]
+n44[`unnamed unknwon Property`: Property]
+n45[`unnamed unknwon NavigationProperty`: NavigationProperty]
+n46[@Core.Description: Annotation]
+n47[Category: EntityType]
+n48[`unnamed unknwon Property`: Property]
+n49[`unnamed unknwon Property`: Property]
+n50[@Core.Description: Annotation]
 n1-->n2
+n1-->n3
+n1-->n4
+n1-->n5
 n1-->n6
-n2-. $contained .-> n1
-n2-->n3
-n2-->n4
-n3-. $contained .-> n2
-n3-. Type .-> n11
-n4-. $contained .-> n2
-n4-->n5
-n4-. Type .-> n6
-n5-. $contained .-> n4
-n5-. Term .-> n15
-n6-. $contained .-> n1
-n6-->n7
-n6-->n8
-n6-->n9
-n7-. $contained .-> n6
-n7-. Type .-> n11
-n8-. $contained .-> n6
-n8-. Type .-> n11
-n9-. $contained .-> n6
-n9-. Term .-> n15
-n10-. $contained .-> n0
-n10-->n11
-n10-->n12
-n10-->n13
-n11-. $contained .-> n10
-n12-. $contained .-> n10
-n13-. $contained .-> n10
-n14-. $contained .-> n0
-n14-->n15
-n14-->n16
-n14-->n17
-n14-->n18
-n15-. $contained .-> n14
-n15-. Type .-> n11
-n16-. $contained .-> n14
-n16-. Type .-> n17
-n17-. $contained .-> n14
-n17-. UnderlyingType .-> n13
-n18-. $contained .-> n14
-n18-. Type .-> n11
+n1-->n7
+n1-->n8
+n1-->n9
+n1-->n10
+n1-->n11
+n1-->n12
+n1-->n13
+n1-->n14
+n1-->n15
+n1-->n16
+n1-->n17
+n1-->n18
+n1-->n19
+n1-->n20
+n1-->n21
+n1-->n22
+n1-->n23
+n1-->n24
+n1-->n25
+n1-->n26
+n1-->n27
+n1-->n28
+n1-->n29
+n1-->n30
+n1-->n31
+n1-->n32
+n1-->n33
+n1-->n34
+n1-->n35
+n1-->n36
+n1-->n37
+n1-->n38
+n1-->n39
+n1-->n40
+n1-->n41
+n42-->n43
+n42-->n47
+n43-->n44
+n43-->n45
+n44-. Type .-> n39
+n45-->n46
+n45-. Type .-> n47
+n47-->n48
+n47-->n49
+n47-->n50
+n48-. Type .-> n39
+n49-. Type .-> n39
 ```

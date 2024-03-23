@@ -16,7 +16,7 @@ static class EnumerableExtensions
     }
 
 
-    public static IEnumerable<(int, T)> WidthIndex<T>(this IEnumerable<T>? items)
+    public static IEnumerable<(int Index, T Item)> WidthIndex<T>(this IEnumerable<T>? items)
     {
         var i = 0;
         foreach (var item in items ?? []) { yield return (i, item); i += 1; }

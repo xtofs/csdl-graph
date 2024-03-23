@@ -16,15 +16,12 @@ internal class Program
 
     private static void Run(string inputFile, string outputFile)
     {
-        Console.Clear();
-
         var iDir = Path.GetDirectoryName(inputFile)!;
         var oDir = Path.GetDirectoryName(outputFile)!;
         File.WriteAllText(Path.Combine(oDir, "schema.lpg"), SCHEMA.ToString());
 
-        var edm = Path.Combine(iDir, "edm.xml");
-        var core = Path.Combine(iDir, "core.xml");
-        var graph = Graph.LoadGraph(SCHEMA, inputFile, edm, core);
+        // var core = Path.Combine(iDir, "core.xml");
+        var graph = Graph.LoadGraph(SCHEMA, inputFile);
 
         graph.WriteTo(outputFile);
     }

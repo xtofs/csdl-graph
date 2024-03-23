@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 internal class Program
 {
-    private static async void Main(string[] args)
+    private static void Main(string[] args)
     {
         // https://learn.microsoft.com/en-us/dotnet/core/additional-tools/xml-serializer-generator
         var serializer = new XmlSerializer<Edmx>();

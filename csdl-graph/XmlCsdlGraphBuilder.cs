@@ -29,23 +29,76 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
         // stage 3 resolve the references 
         builder.ResolveReferences();
 
-        Console.WriteLine();
-        Console.WriteLine("# Names");
-        Console.WriteLine();
-        Console.WriteLine(string.Join(Environment.NewLine, builder._nameTable.Keys));
         return builder._graph;
     }
 
+    private static readonly (string Name, string Label, bool IsAbstract)[] EdmItems = [
+        ("AnnotationPath", "PrimitiveType", false),
+        ("AnyPropertyPath", "PrimitiveType", false),
+        ("Binary", "PrimitiveType", false),
+        ("Boolean", "PrimitiveType", false),
+        ("Byte", "PrimitiveType", false),
+        ("ComplexType", "PrimitiveType", false),
+        ("Date", "PrimitiveType", false),
+        ("DateTimeOffset", "PrimitiveType", false),
+        ("Decimal", "PrimitiveType", false),
+        ("Double", "PrimitiveType", false),
+        ("Duration", "PrimitiveType", false),
+        ("EntityType", "PrimitiveType", false),
+        ("Geography", "PrimitiveType", false),
+        ("GeographyCollection", "PrimitiveType", false),
+        ("GeographyLineString", "PrimitiveType", false),
+        ("GeographyMultiLineString", "PrimitiveType", false),
+        ("GeographyMultiPoint", "PrimitiveType", false),
+        ("GeographyMultiPolygon", "PrimitiveType", false),
+        ("GeographyPoint", "PrimitiveType", false),
+        ("GeographyPolygon", "PrimitiveType", false),
+        ("Geometry", "PrimitiveType", false),
+        ("GeometryCollection", "PrimitiveType", false),
+        ("GeometryLineString", "PrimitiveType", false),
+        ("GeometryMultiLineString", "PrimitiveType", false),
+        ("GeometryMultiPoint", "PrimitiveType", false),
+        ("GeometryMultiPolygon", "PrimitiveType", false),
+        ("GeometryPoint", "PrimitiveType", false),
+        ("GeometryPolygon", "PrimitiveType", false),
+        ("Guid", "PrimitiveType", false),
+        ("Int", "PrimitiveType", false),
+        ("ModelElementPath", "PrimitiveType", false),
+        ("NavigationPropertyPath", "PrimitiveType", false),
+        ("PrimitiveType", "PrimitiveType", false),
+        ("PropertyPath", "PrimitiveType", false),
+        ("SByte", "PrimitiveType", false),
+        ("Single", "PrimitiveType", false),
+        ("Stream", "PrimitiveType", false),
+        ("String", "PrimitiveType", false),
+        ("TimeOfDay", "PrimitiveType", false),
+        ("Untyped", "PrimitiveType", false),
+    ];
+
     private void AddEdmSchema(int root)
     {
-        var edm = _graph.AddNode("Schema", new Dictionary<string, string> { ["Namespace"] = "odata.edm", ["Alias"] = "Edm" });
+        var lookup = new Dictionary<int, (string Label, string Path)> { [root] = ("$ROOT", null!) };
 
+        var edmSchema = Add(root, "Schema", new Dictionary<string, string> { ["Namespace"] = "odata.edm", ["Alias"] = "Edm" });
+        foreach (var (Name, Label, IsAbstract) in EdmItems)
+        {
+            var props = new Dictionary<string, string> { ["Name"] = Name };
+            if (IsAbstract) { props.Add("Abstract", "true"); }
+            var i = Add(edmSchema, "PrimitiveType", props);
+        }
 
-        var edmSchema = _graph.AddChildNode(root, "Schema", new Dictionary<string, string> { ["Namespace"] = "odata.edm", ["Alias"] = "Edm" });
+        int Add(int parent, string label, IReadOnlyDictionary<string, string> properties)
+        {
+            var id = _graph.AddChildNode(parent, label, properties);
+            var node = _graph.nodes[id];
+            node.Name = GetNodeName(node);
 
-        var stringType = _graph.AddChildNode(edmSchema, "PrimitiveType", new Dictionary<string, string> { ["Name"] = "String" });
-        var int32Type = _graph.AddChildNode(edmSchema, "PrimitiveType", new Dictionary<string, string> { ["Name"] = "Int32" });
-        var boolType = _graph.AddChildNode(edmSchema, "PrimitiveType", new Dictionary<string, string> { ["Name"] = "Boolean" });
+            var path = lookup[parent].Path != null ? lookup[parent].Path + GetPathSeparator(lookup[parent].Label, node.Label) + node.Name : node.Name;
+            lookup.Add(id, (label, path));
+            _nameTable.Add(path, id);
+
+            return id;
+        }
     }
 
     public void Load(string[] Names, XElement xml, string filePath, int parentId, string? gpath)
@@ -152,7 +205,6 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
     {
         return (parentLabel, childLabel) switch
         {
-
             // Schema elements are separated from the schema by '.'
             ("Schema", _) => ".",
 
@@ -171,13 +223,15 @@ internal record XmlCsdlGraphBuilder(LabeledPropertyGraphSchema Schema)
         return label switch
         {
             "Schema" =>
-                properties.Get("Alias") ?? properties.Get("Namespace") ?? $"unnamed {label}",
+                properties.Get("Alias") ?? properties.Get("Namespace") ?? $"`unnamed {label}`",
             "PropertyRef" =>
-                properties.Get("Alias") ?? properties.Get("Name") ?? $"unnamed {label}",
+                properties.Get("Alias") ?? properties.Get("Name") ?? $"`unnamed {label}`",
             "Annotation" =>
                 $"@{properties.Get("$Term")}{PrefixIfNotNull("#", properties.Get("Qualifier"))}",
+            "EntityType" or "CompleType" or "PrimitiveType" =>
+                properties.Get("Name") ?? $"`unnamed {label}`",
             _ =>
-                properties.Get("Name") ?? $"unnamed {label}",
+                $"`unnamed unknwon {label}`"
         };
 
         static string PrefixIfNotNull(string prefix, string? text) => text == null ? "" : prefix + text;
