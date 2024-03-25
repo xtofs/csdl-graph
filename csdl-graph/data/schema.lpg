@@ -1,4 +1,4 @@
-class Schema {
+model element Schema {
     // properties (of primitive values)
     Namespace: string;
     Alias: string;
@@ -7,7 +7,7 @@ class Schema {
     Elements: Collection<EnumType|EntityType|ComplexType|PrimitiveType|TypeDefinition|Term>;
 }
 
-class TypeDefinition {
+model element TypeDefinition {
     // properties (of primitive values)
     Name: string;
 
@@ -18,7 +18,7 @@ class TypeDefinition {
     Elements: Collection<Annotation>;
 }
 
-class EnumType {
+model element EnumType {
     // properties (of primitive values)
     Name: string;
 
@@ -26,13 +26,13 @@ class EnumType {
     Members: Collection<Member>;
 }
 
-class Member {
+model element Member {
     // properties (of primitive values)
     Name: string;
     Value: number;
 }
 
-class EntityType {
+model element EntityType {
     // properties (of primitive values)
     Name: string;
 
@@ -44,7 +44,7 @@ class EntityType {
     Key: Collection<PropertyRef>;
 }
 
-class ComplexType {
+model element ComplexType {
     // properties (of primitive values)
     Name: string;
 
@@ -55,7 +55,7 @@ class ComplexType {
     Properties: Collection<Property|NavigationProperty|Annotation>;
 }
 
-class Property {
+model element Property {
     // properties (of primitive values)
     Name: string;
     Nullable: boolean;
@@ -67,7 +67,7 @@ class Property {
     Annotations: Collection<Annotation>;
 }
 
-class NavigationProperty {
+model element NavigationProperty {
     // properties (of primitive values)
     Name: string;
     ContainsTarget: boolean;
@@ -79,7 +79,7 @@ class NavigationProperty {
     Annotations: Collection<Annotation>;
 }
 
-class PropertyRef {
+model element PropertyRef {
     // properties (of primitive values)
     Alias: string;
 
@@ -87,10 +87,10 @@ class PropertyRef {
     Name: PathReference<NavigationProperty,Property>;
 }
 
-class NavigationPropertyBinding {
+model element NavigationPropertyBinding {
 }
 
-class PrimitiveType {
+model element PrimitiveType {
     // properties (of primitive values)
     Name: string;
 
@@ -98,7 +98,7 @@ class PrimitiveType {
     Annotations: Collection<Annotation>;
 }
 
-class Term {
+model element Term {
     // properties (of primitive values)
     Name: string;
     Nullable: boolean;
@@ -113,7 +113,7 @@ class Term {
     Annotations: Collection<Annotation>;
 }
 
-class Annotation {
+model element Annotation {
     // properties (of primitive values)
     Qualifier: string;
 
